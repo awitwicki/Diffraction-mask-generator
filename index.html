@@ -42,7 +42,7 @@
             </div>
             <div class="input-group">
                 <label for="height">Висота (мм):</label>
-                <input type="number" id="height" value="300" min="10" max="2000" step="1">
+                <input type="number" id="height" value="30" min="10" max="75" step="1">
             </div>
             <div class="input-group">
                 <label for="segments">Сегменти:</label>
@@ -64,7 +64,7 @@
     
     <script>
         // Основні глобальні змінні
-        let scene, camera, renderer, controls, cylinder, maskGroup;
+        let scene, camera, renderer, controls, mesh, maskGroup;
         const MM_TO_M = 0.001; // Коефіцієнт переведення мм в метри
 
         // Ініціалізація сцени
@@ -105,22 +105,22 @@
             // Сітка для орієнтації
             const SCALE = 0.01;
             const gridHelper = new THREE.GridHelper(1, 10);
-            gridHelper.position.y = -0.15;
+            // gridHelper.position.y = -0.015;
             scene.add(gridHelper);
 
             // Генерація початкового циліндра
-            generateCylinder();
+            generateBahtinovMaskMesh();
 
             // Обробка подій
             window.addEventListener('resize', onWindowResize);
-            document.getElementById('generateBtn').addEventListener('click', generateCylinder);
+            document.getElementById('generateBtn').addEventListener('click', generateBahtinovMaskMesh);
             document.getElementById('exportBtn').addEventListener('click', exportSTL);
         }
 
         // Генерація циліндра з маскою
-        function generateCylinder() {
-            // Видалення старого циліндра
-            if (cylinder) scene.remove(cylinder);
+        function generateBahtinovMaskMesh() {
+            // Видалення старого mesh
+            if (mesh) scene.remove(mesh);
             if (maskGroup) scene.remove(maskGroup);
 
             // Отримання параметрів (в міліметрах)
@@ -143,27 +143,25 @@
                 1, 
                 false
             );
-            
+
             const material = new THREE.MeshPhongMaterial({
                 color: 0x3498db,
                 flatShading: true,
                 side: THREE.DoubleSide
             });
 
-            cylinder = new THREE.Mesh(geometry, material);
-            scene.add(cylinder);
+            mesh = new THREE.Mesh(geometry, material);
 
-            // Генерація маски Бахтінова
-            generateBahtinovMask(radius, height, segments, thickness);
-            
+            mesh.position.y = height / 2;
+
+
+            scene.add(mesh);
+
             // Оновлення статусу
             document.getElementById('status').textContent = `Модель згенерована: Ø${radius_mm}мм × ${height_mm}мм`;
         }
 
-        // Генерація маски Бахтінова
-        function generateBahtinovMask(radius, height, segments, thickness) {
-            
-        }
+
 
         // Експорт у STL
         function exportSTL() {
@@ -190,7 +188,7 @@
             const radius = document.getElementById('radius').value;
             const height = document.getElementById('height').value;
             link.download = `циліндр_Ø${radius}мм_${height}мм_бахтiмов.stl`;
-
+            
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
