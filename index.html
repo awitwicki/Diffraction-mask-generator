@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>3D Циліндр з маскою Бахтінова</title>
+    <style>
+        body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
+        #container { position: relative; width: 100vw; height: 100vh; }
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            z-index: 100;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+        .input-group { margin: 10px 0; }
+        label { display: inline-block; width: 120px; }
+        input { width: 100px; padding: 5px; }
+        button { 
+            background: #2c3e50; 
+            color: white; 
+            border: none; 
+            padding: 10px 15px; 
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        button:hover { background: #3498db; }
+        #status { margin-top: 10px; color: #27ae60; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="ui">
+            <h2>Генератор циліндра з маскою Бахтінова</h2>
+            <div class="input-group">
+                <label for="radius">Радіус (см):</label>
+                <input type="number" id="radius" value="15" min="1" max="100" step="0.1">
+            </div>
+            <div class="input-group">
+                <label for="height">Висота (см):</label>
+                <input type="number" id="height" value="30" min="1" max="200" step="0.1">
+            </div>
+            <div class="input-group">
+                <label for="segments">Сегменти:</label>
+                <input type="number" id="segments" value="48" min="8" max="128">
+            </div>
+            <div class="input-group">
+                <label for="thickness">Товщина маски (мм):</label>
+                <input type="number" id="thickness" value="2" min="1" max="10" step="0.1">
+            </div>
+            <button id="generateBtn">Генерувати модель</button>
+            <button id="exportBtn">Експорт в STL</button>
+            <div id="status"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/exporters/STLExporter.js"></script>
+    
+    <script>
+        // Основні глобальні змінні
+        let scene, camera, renderer, controls, cylinder, maskGroup;
+        const SCALE = 0.001; // Масштаб для перетворення мм в метри (Three.js одиниці)
+
+        // Ініціалізація сцени
+        function init() {
+            // Створення сцени
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf0f0f0);
+
+            // Камера
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 50 * SCALE, 50 * SCALE);
+
+            // Рендерер
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.getElementById('container').appendChild(renderer.domElement);
+
+            // Контроль миші
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.minDistance = 130 * SCALE;
+            controls.maxDistance = 2000 * SCALE;
+
+            // Освітлення
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight1.position.set(10, 20, 15);
+            scene.add(directionalLight1);
+
+            const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.5);
+            directionalLight2.position.set(-10, -20, -15);
+            scene.add(directionalLight2);
+
+            // Сітка для орієнтації
+            const gridHelper = new THREE.GridHelper(100 * SCALE, 10);
+            gridHelper.position.y = -15 * SCALE;
+            scene.add(gridHelper);
+
+            // Генерація початкового циліндра
+            generateCylinder();
+
+            // Обробка подій
+            window.addEventListener('resize', onWindowResize);
+            document.getElementById('generateBtn').addEventListener('click', generateCylinder);
+            document.getElementById('exportBtn').addEventListener('click', exportSTL);
+        }
+
+        // Генерація циліндра з маскою
+        function generateCylinder() {
+            // Видалення старого циліндра
+            if (cylinder) scene.remove(cylinder);
+            if (maskGroup) scene.remove(maskGroup);
+
+            // Отримання параметрів (в сантиметрах)
+            const radius_mm = parseFloat(document.getElementById('radius').value);
+            const height_mm = parseFloat(document.getElementById('height').value);
+            const segments = parseInt(document.getElementById('segments').value);
+            const thickness_mm = parseFloat(document.getElementById('thickness').value);
+
+            // Конвертація в метри (Three.js одиниці)
+            const radius = radius_mm * SCALE;
+            const height = height_mm * SCALE;
+            const thickness = thickness_mm * 0.001; // мм в метри
+
+            // Створення циліндра (суцільний)
+            const geometry = new THREE.CylinderGeometry(
+                radius, 
+                radius, 
+                height, 
+                segments, 
+                1, 
+                false
+            );
+            
+            const material = new THREE.MeshPhongMaterial({
+                color: 0x3498db,
+                flatShading: true,
+                side: THREE.DoubleSide
+            });
+
+            cylinder = new THREE.Mesh(geometry, material);
+            scene.add(cylinder);
+
+            // Генерація маски Бахтінова
+            generateBahtinovMask(radius, height, segments, thickness);
+            
+            // Оновлення статусу
+            document.getElementById('status').textContent = `Модель згенерована: Ø${radius_mm}мм × ${height_mm}мм`;
+        }
+
+        // Генерація маски Бахтінова
+        function generateBahtinovMask(radius, height, segments, thickness) {
+            // maskGroup = new THREE.Group();
+            
+            // // Параметри маски
+            // const maskColor = 0xe74c3c;
+            // const maskMaterial = new THREE.MeshPhongMaterial({
+            //     color: maskColor,
+            //     flatShading: true
+            // });
+            
+            // scene.add(maskGroup);
+        }
+
+        // Експорт у STL
+        function exportSTL() {
+            if (!cylinder) return;
+            
+            // Створюємо групу для експорту
+            const exportGroup = new THREE.Group();
+            exportGroup.add(cylinder.clone());
+            
+            if (maskGroup) {
+                exportGroup.add(maskGroup.clone());
+            }
+            
+            // Експорт
+            const exporter = new THREE.STLExporter();
+            const stlString = exporter.parse(exportGroup, { binary: false });
+            
+            // Створення Blob та посилання для завантаження
+            const blob = new Blob([stlString], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            
+            // Генерація імені файлу на основі параметрів
+            const radius = document.getElementById('radius').value;
+            const height = document.getElementById('height').value;
+            link.download = `циліндр_Ø${radius}мм_${height}мм_бахтiмов.stl`;
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Оновлення статусу
+            document.getElementById('status').textContent = `STL файл згенеровано!`;
+        }
+
+        // Обробка зміни розміру вікна
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // Анімація
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Запуск додатку
+        init();
+        animate();
+    </script>
+</body>
+</html>
