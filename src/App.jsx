@@ -30,7 +30,12 @@ function App() {
     var geometry = new THREE.BoxGeometry(height * MM_TO_M, 0.02, 0.02);
     console.log("new height", height);
     // var geometry = new THREE.CylinderGeometry(10, 10, 10,10 ,20);
-    var material = new THREE.MeshBasicMaterial({ color: 0x3498db });
+    const material = new THREE.MeshPhongMaterial({
+                color: 0x3498db,
+                flatShading: true,
+                side: THREE.DoubleSide
+            });
+
     var cube = new THREE.Mesh(geometry, material);
 
     const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.012, 18, 18));
@@ -47,13 +52,15 @@ function App() {
   };
 
   useEffect(() => {
-    // initThreeJS();
-    var scene = new THREE.Scene();
+    // window.addEventListener('resize', onWindowResize);
+
+    let scene = new THREE.Scene();
     scene.background = new THREE.Color(0xf0f0f0);
     sceneRef.current = scene;
     var camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 10);
     camera.position.set(0, 0.1, 0.1);
 
+    // var renderer = new THREE.WebGPURenderer({ antialias: true });
     var renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -69,28 +76,18 @@ function App() {
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambientLight);
 
-    const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.8);
+    const directionalLight1 = new THREE.DirectionalLight(0xffffff, 2.8);
     directionalLight1.position.set(0.5, 0.5, 0.5);
     scene.add(directionalLight1);
-
-    const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.5);
-    directionalLight2.position.set(-0.5, -0.5, -0.5);
-    scene.add(directionalLight2);
-
-    const directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
-    scene.add( directionalLight )
-    rlightef.current = directionalLight;
 
     // Сітка для орієнтації
     const gridHelper = new THREE.GridHelper(0.2, 20);
     scene.add(gridHelper);
 
-
     // use ref as a mount point of the Three.js scene instead of the document.body
 
     const subRes = generateBahtinovMaskMesh();
     combinedMeshRef.current = subRes;
-
     scene.add(subRes);
     // setMainMesh(subRes);
 
@@ -98,6 +95,7 @@ function App() {
       requestAnimationFrame(animate);
       subRes.rotation.x += 0.01;
       subRes.rotation.y += 0.01;
+      controls.update();
       renderer.render(scene, camera);
     };
     animate();
@@ -137,137 +135,6 @@ function App() {
   //   }
   // }, [radius, height, segments, thickness]);
 
-
-
-  // const initThreeJS = () => {
-  //   // Ініціалізація сцени
-  //   const scene = new THREE.Scene();
-  //   scene.background = new THREE.Color(0xf0f0f0);
-  //   sceneRef.current = scene;
-
-  //   // Камера
-  //   const camera = new window.THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 10);
-  //   camera.position.set(0, 0.3, 0.5);
-  //   cameraRef.current = camera;
-
-  //   // Рендерер
-  //   const renderer = new window.THREE.WebGLRenderer({ antialias: true });
-  //   renderer.setSize(window.innerWidth, window.innerHeight);
-  //   renderer.setPixelRatio(window.devicePixelRatio);
-  //   containerRef.current.appendChild(renderer.domElement);
-  //   rendererRef.current = renderer;
-
-  //   // Контроль миші
-  //   const controls = new window.THREE.OrbitControls(camera, renderer.domElement);
-  //   controls.enableDamping = true;
-  //   controls.dampingFactor = 0.05;
-  //   controls.minDistance = 0.05;
-  //   controls.maxDistance = 2.0;
-  //   controlsRef.current = controls;
-
-  //   // Освітлення
-  //   const ambientLight = new window.THREE.AmbientLight(0xffffff, 0.6);
-  //   scene.add(ambientLight);
-
-  //   const directionalLight1 = new window.THREE.DirectionalLight(0xffffff, 0.8);
-  //   directionalLight1.position.set(0.5, 0.5, 0.5);
-  //   scene.add(directionalLight1);
-
-  //   const directionalLight2 = new window.THREE.DirectionalLight(0xffffff, 0.5);
-  //   directionalLight2.position.set(-0.5, -0.5, -0.5);
-  //   scene.add(directionalLight2);
-
-  //   // Сітка для орієнтації
-  //   const gridHelper = new window.THREE.GridHelper(1, 10);
-  //   scene.add(gridHelper);
-
-  //   // Обробка зміни розміру вікна
-  //   window.addEventListener('resize', onWindowResize);
-
-  //   // Анімаційний цикл
-  //   const animate = () => {
-  //     controls.update();
-  //     renderer.render(scene, camera);
-  //     requestIdRef.current = requestAnimationFrame(animate);
-  //   };
-  //   requestIdRef.current = requestAnimationFrame(animate);
-
-  //   // Генерація початкової моделі
-  //   generateBahtinovMaskMesh();
-  // };
-
-  // const generateBahtinovMaskMesh = () => {
-  //   const scene = sceneRef.current;
-  //   if (!scene) return;
-
-  //   // Видалення старого меша
-  //   if (combinedMeshRef.current) {
-  //     scene.remove(combinedMeshRef.current);
-  //     if (combinedMeshRef.current.geometry) {
-  //       combinedMeshRef.current.geometry.dispose();
-  //     }
-  //     if (combinedMeshRef.current.material) {
-  //       combinedMeshRef.current.material.dispose();
-  //     }
-  //   }
-
-  //   // Конвертація в метри
-  //   const radiusVal = radius * MM_TO_M;
-  //   const heightVal = height * MM_TO_M;
-  //   const thicknessVal = thickness * MM_TO_M;
-
-  //   // Створення основного циліндра
-  //   const mainGeometry = new window.THREE.CylinderGeometry(
-  //     radiusVal,
-  //     radiusVal,
-  //     heightVal,
-  //     segments
-  //   );
-  //   const mainMaterial = new window.THREE.MeshPhongMaterial({ color: 0x3498db });
-  //   const mainMesh = new window.THREE.Mesh(mainGeometry, mainMaterial);
-    
-  //   // Створення циліндра для віднімання
-  //   const subtractGeometry = new window.THREE.CylinderGeometry(
-  //     radiusVal - thicknessVal,
-  //     radiusVal - thicknessVal,
-  //     heightVal * 1.1,
-  //     segments
-  //   );
-  //   const subtractMesh = new window.THREE.Mesh(subtractGeometry);
-  //   subtractMesh.position.y = -heightVal * 0.05;
-
-  //   // Виконання віднімання
-  //   try {
-  //     // Перетворюємо меші у формат ThreeBSP
-  //     const mainBSP = new window.ThreeBSP(mainMesh);
-  //     const subtractBSP = new window.ThreeBSP(subtractMesh);
-      
-  //     // Виконуємо булеву операцію віднімання
-  //     const resultBSP = mainBSP.subtract(subtractBSP);
-      
-  //     // Перетворюємо результат назад у Three.js mesh
-  //     const result = resultBSP.toMesh(mainMaterial);
-      
-  //     // Копіюємо властивості трансформації
-  //     result.position.copy(mainMesh.position);
-  //     result.rotation.copy(mainMesh.rotation);
-  //     result.scale.copy(mainMesh.scale);
-      
-  //     // Оновлюємо нормалі для коректного освітлення
-  //     result.geometry.computeVertexNormals();
-      
-  //     combinedMeshRef.current = result;
-  //     scene.add(result);
-  //   } catch (e) {
-  //     console.error("Помилка булевої операції:", e);
-  //     // Резервний варіант - показати основний циліндр
-  //     combinedMeshRef.current = mainMesh;
-  //     scene.add(mainMesh);
-  //   }
-
-  //   setStatus(`Модель згенерована: Ø${radius}мм × ${height}мм`);
-  // };
-
   const exportSTL = () => {
     // if (!combinedMeshRef.current) return;
 
@@ -284,16 +151,6 @@ function App() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
-    setStatus(`STL файл згенеровано!`);
-  };
-
-  const onWindowResize = () => {
-    if (cameraRef.current && rendererRef.current) {
-      cameraRef.current.aspect = window.innerWidth / window.innerHeight;
-      cameraRef.current.updateProjectionMatrix();
-      rendererRef.current.setSize(window.innerWidth, window.innerHeight);
-    }
   };
 
   return (
