@@ -61,10 +61,11 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/exporters/STLExporter.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/utils/BufferGeometryUtils.js"></script>
     
     <script>
         // Основні глобальні змінні
-        let scene, camera, renderer, controls, mesh, maskGroup;
+        let scene, camera, renderer, controls, combinedMesh, maskGroup;
         const MM_TO_M = 0.001; // Коефіцієнт переведення мм в метри
 
         // Ініціалізація сцени
@@ -120,8 +121,11 @@
         // Генерація циліндра з маскою
         function generateBahtinovMaskMesh() {
             // Видалення старого mesh
-            if (mesh) scene.remove(mesh);
-            if (maskGroup) scene.remove(maskGroup);
+            if (combinedMesh) {
+                scene.remove(combinedMesh);
+                combinedMesh.geometry.dispose();
+                combinedMesh.material.dispose();
+            }
 
             // Отримання параметрів (в міліметрах)
             const radius_mm = parseFloat(document.getElementById('radius').value);
@@ -134,8 +138,8 @@
             const height = height_mm * MM_TO_M;
             const thickness = thickness_mm * MM_TO_M;
 
-            // Створення циліндра (суцільний)
-            const geometry = new THREE.CylinderGeometry(
+            // Створення циліндра (BufferGeometry)
+            const cylinderGeometry1 = new THREE.CylinderGeometry(
                 radius, 
                 radius, 
                 height, 
@@ -144,18 +148,42 @@
                 false
             );
 
+            // Другий циліндр для вирізу
+            const cylinderGeometry2 = new THREE.CylinderGeometry(
+                radius/2, 
+                radius/2, 
+                height*2, 
+                segments, 
+                1, 
+                false
+            );
+
+            // Перетворюємо геометрії в BufferGeometries
+            const bufferGeo1 = cylinderGeometry1;
+            const bufferGeo2 = cylinderGeometry2;
+            
+            // Вирівнюємо другий циліндр
+            const matrix = new THREE.Matrix4();
+            matrix.makeTranslation(0, height/4, 0); // Зсув на половину висоти
+            bufferGeo2.applyMatrix4(matrix);
+
+            // Об'єднуємо геометрії
+            const mergedGeometry = THREE.BufferGeometryUtils.mergeBufferGeometries(
+                [bufferGeo1, bufferGeo2], 
+                false // не об'єднувати атрибути
+            );
+
+            // Створюємо матеріал
             const material = new THREE.MeshPhongMaterial({
                 color: 0x3498db,
                 flatShading: true,
                 side: THREE.DoubleSide
             });
 
-            mesh = new THREE.Mesh(geometry, material);
-
-            mesh.position.y = height / 2;
-
-
-            scene.add(mesh);
+            // Створюємо об'єднаний меш
+            combinedMesh = new THREE.Mesh(mergedGeometry, material);
+            combinedMesh.position.y = height / 2;
+            scene.add(combinedMesh);
 
             // Оновлення статусу
             document.getElementById('status').textContent = `Модель згенерована: Ø${radius_mm}мм × ${height_mm}мм`;
