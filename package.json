@@ -1,6 +1,5 @@
 {
   "name": "diffraction-mask-generator-app",
-  "homepage": "https://awitwicki.github.io/Diffraction-mask-generator",
   "private": true,
   "version": "0.0.0",
   "type": "module",
