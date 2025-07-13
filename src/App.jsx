@@ -28,7 +28,7 @@ function App() {
     scene.background = new THREE.Color(0xf0f0f0);
     sceneRef.current = scene;
     var camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 10);
-    camera.position.set(0, 0.25, 0.25);
+    camera.position.set(0, 0.25, -0.25);
 
     var renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
