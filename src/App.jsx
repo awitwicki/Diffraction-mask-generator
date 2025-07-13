@@ -78,16 +78,13 @@ function App() {
     if (!sceneRef.current) return;
     
     if (combinedMeshRef.current) {
-      console.log("Видаляємо старий меш");
       sceneRef.current.remove(combinedMeshRef.current);
       
       if (combinedMeshRef.current.geometry) {
-        console.log("Видаляємо геометрію");
         combinedMeshRef.current.geometry.dispose();
       }
       
       if (combinedMeshRef.current.material) {
-        console.log("Видаляємо матеріал");
         combinedMeshRef.current.material.dispose();
       }
     }
