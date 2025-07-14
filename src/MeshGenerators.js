@@ -10,8 +10,12 @@ const generate2dBahtinovMaskMesh = (
   const innerRadius = newApertureDiameter / 2;
   const outerRadius = newTelescopeInnerDiameter / 2;
 
-  // TODO add formula
-  const slitWidth = 1.0;
+  const bahtinovFactor = 200.0; // 150 - 200
+  let slitWidth = newFocalLength / bahtinovFactor;
+  if (slitWidth < 1) {
+    slitWidth *=3;
+  }
+
   const slitSpacing = slitWidth * 2;
 
   const outerCircle = new THREE.Shape().absarc(
@@ -24,12 +28,11 @@ const generate2dBahtinovMaskMesh = (
   );
 
   const numSlits = Math.floor((innerRadius * 2) / slitSpacing);
-  console.log(numSlits);
 
   for (let i = -Math.floor(numSlits / 2); i <= Math.floor(numSlits / 2); i++) {
     const distance = i * slitSpacing;
 
-    const startX = 0;
+    const startX = slitWidth;
     const startY = distance;
 
     const endX = Math.sqrt(Math.pow(innerRadius, 2) - Math.pow(distance, 2));
