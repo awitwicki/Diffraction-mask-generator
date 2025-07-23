@@ -2,6 +2,106 @@ import * as THREE from "three";
 
 const MM_TO_M = 0.001;
 
+const calculateCircleYFromX = (radius, x) => {
+  return Math.sqrt(Math.pow(Math.abs(radius), 2) - Math.pow(Math.abs(x), 2));
+};
+
+const generateTriangle = (
+  radius,
+  slitsZoneStartAngle,
+  slitsZoneWidthAngle,
+) => {
+  const paths = [];
+  
+  let xStart = -radius * Math.cos(Math.PI - slitsZoneStartAngle);
+  let xEnd = radius * Math.cos(slitsZoneStartAngle - slitsZoneWidthAngle);
+  let yStart = calculateCircleYFromX(radius, xStart);
+  let yEnd = calculateCircleYFromX(radius, xEnd);
+
+  // Cut triangle from circle center and xstartand xend points
+  {
+    const triangle = new THREE.Path();
+    triangle.moveTo(0, 0);
+    triangle.lineTo(xStart, yStart);
+
+    // put 10 samples on the circle arc
+    const numSamples = 10;
+    for (let i = 0; i <= numSamples; i++) {
+      const distance = xEnd - xStart;
+      const step = distance / numSamples;
+      const x = xStart + i * step;
+      const y = calculateCircleYFromX(radius, x);
+
+      triangle.lineTo(x, y);
+    }
+
+    triangle.lineTo(xEnd, yEnd);
+    triangle.lineTo(0, 0);
+
+    paths.push(triangle);
+  }
+
+  return paths;
+};
+
+const generateSlits = (
+  radius,
+  slitsPatternAngle,
+  slitsZoneStartAngle,
+  slitsZoneWidthAngle,
+  slitWidth
+) => {
+  const paths = [];
+  const slitSpacing = slitWidth * 2;
+
+  let xStart = -radius * Math.cos(Math.PI - slitsZoneStartAngle);
+  let xEnd = radius * Math.cos(slitsZoneStartAngle - slitsZoneWidthAngle);
+  let yStart = calculateCircleYFromX(radius, xStart);
+  let yEnd = calculateCircleYFromX(radius, xEnd);
+
+  console.log("slitsZoneWidthAngle degrees", THREE.MathUtils.radToDeg(slitsZoneWidthAngle).toFixed(2));
+  console.log("slitsZoneStartAngle", THREE.MathUtils.radToDeg(slitsZoneStartAngle).toFixed(2));
+  console.log("slitsZoneend degrees", THREE.MathUtils.radToDeg(slitsZoneStartAngle - slitsZoneWidthAngle).toFixed(2));
+  console.log("slitsZoneAngle cos", Math.cos(slitsZoneStartAngle).toFixed(2));
+  console.log("xStart", xStart.toFixed(2), "xEnd", xEnd.toFixed());
+  console.log("yStart", yStart.toFixed(2), "yEnd", yEnd.toFixed(2));
+
+  const numSlits = Math.floor((xEnd - xStart) / slitSpacing);
+
+  console.log("slitSpacing", slitSpacing);
+  console.log("width", (xEnd - xStart));
+
+  const xMiddlePoint = (xStart + xEnd) / 2.0;
+  console.log("xMiddlePoint", xMiddlePoint.toFixed(2));
+
+  // todo center slits around xMiddlePoint
+
+  for (let i = -Math.floor(numSlits / 2); i <= Math.floor(numSlits / 2); i++) {
+    // console.log("i", i, "numSlits", numSlits);
+
+    const slitStartX = xMiddlePoint + (i * slitSpacing);
+    const slitEndX = slitStartX + slitWidth;
+
+    const slitStartYInner = slitStartX < 0 ? -slitStartX * Math.tan((2 * Math.PI) - slitsZoneStartAngle) : -slitStartX * Math.tan((2 * Math.PI) - slitsZoneStartAngle - slitsZoneWidthAngle);
+    const slitEndYInner = slitEndX < 0 ? -slitEndX * Math.tan((2 * Math.PI) - slitsZoneStartAngle) : -slitEndX * Math.tan((2 * Math.PI) - slitsZoneStartAngle - slitsZoneWidthAngle);
+
+    const slitStartYOuter = calculateCircleYFromX(radius, slitStartX);
+    const slitEndYOuter = calculateCircleYFromX(radius, slitEndX);
+
+    // console.log(slitStartYInner.toFixed(2), slitStartYOuter.toFixed(2), slitEndYInner.toFixed(2), slitEndYOuter.toFixed(2));
+
+    const slit = new THREE.Path();
+    slit.moveTo(slitStartX, slitStartYInner);
+    slit.lineTo(slitStartX, slitStartYOuter);
+    slit.lineTo(slitEndX, slitEndYOuter);
+    slit.lineTo(slitEndX, slitEndYInner);
+
+    paths.push(slit); 
+  }
+
+  return paths;
+};
+
 const generate2dBahtinovMaskMesh = (
   newFocalLength,
   newApertureDiameter,
@@ -13,10 +113,8 @@ const generate2dBahtinovMaskMesh = (
   const bahtinovFactor = 200.0; // 150 - 200
   let slitWidth = newFocalLength / bahtinovFactor;
   if (slitWidth < 1) {
-    slitWidth *=3;
+    slitWidth *= 3;
   }
-
-  const slitSpacing = slitWidth * 2;
 
   const outerCircle = new THREE.Shape().absarc(
     0,
@@ -27,33 +125,17 @@ const generate2dBahtinovMaskMesh = (
     false
   );
 
-  const numSlits = Math.floor((innerRadius * 2) / slitSpacing);
+  const slits = generateSlits(
+    innerRadius,
+     Math.PI / 16, // slitsPatternAngle
+    (3 / 4) * Math.PI   , // Кут старту зони (150°)
+    // (3 / 4) * Math.PI + Math.PI /8  , // Кут старту зони (150°)
+    Math.PI / 2, // Кутова зона (90)
+   // slitWidth // Товщина щілини
+   1
+  );
 
-  for (let i = -Math.floor(numSlits / 2); i <= Math.floor(numSlits / 2); i++) {
-    const distance = i * slitSpacing;
-
-    const startX = slitWidth;
-    const startY = distance;
-
-    const endX = Math.sqrt(Math.pow(innerRadius, 2) - Math.pow(distance, 2));
-    const endY = distance;
-
-    const dirX = endX - startX;
-    const dirY = endY - startY;
-    const length = Math.sqrt(dirX * dirX + dirY * dirY);
-
-    const perpX = (-dirY / length) * (slitWidth / 2);
-    const perpY = (dirX / length) * (slitWidth / 2);
-
-    const slit = new THREE.Path();
-    slit.moveTo(startX + perpX, startY + perpY);
-    slit.lineTo(startX - perpX, startY - perpY);
-    slit.lineTo(endX - perpX, endY - perpY);
-    slit.lineTo(endX + perpX, endY + perpY);
-    slit.lineTo(startX + perpX, startY + perpY);
-
-    outerCircle.holes.push(slit);
-  }
+  slits.forEach((slit) => outerCircle.holes.push(slit));
 
   const extrudeSettings = {
     depth: 3,
