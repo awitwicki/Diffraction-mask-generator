@@ -149,6 +149,7 @@ const generate2dBahtinovMaskMesh = (
   const extrudeSettings = {
     depth: 3,
     bevelEnabled: false,
+    curveSegments: 64
   };
 
   const geometry = new THREE.ExtrudeGeometry(outerCircle, extrudeSettings);
