@@ -77,6 +77,11 @@ const generateSlits = (
     // console.log("i", i, "numSlits", numSlits);
 
     const slitStartX = (slitSpacing/4) + (i * slitSpacing);
+
+    if (xEnd - slitStartX <= slitSpacing) {
+      continue;
+    }
+
     const slitEndX = slitStartX + slitWidth;
 
     const slitStartYInner = slitStartX < 0 ? -slitStartX * Math.tan((2 * Math.PI) - slitsZoneStartAngle) : -slitStartX * Math.tan((2 * Math.PI) - slitsZoneStartAngle - slitsZoneWidthAngle);
