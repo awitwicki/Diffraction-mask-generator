@@ -58,6 +58,7 @@ const generateSlits = (
   let xEnd = radius * Math.cos(slitsZoneStartAngle - slitsZoneWidthAngle);
   let yStart = calculateCircleYFromX(radius, xStart);
   let yEnd = calculateCircleYFromX(radius, xEnd);
+  const numSlits = Math.floor((xEnd - xStart) / slitSpacing);
 
   console.log("slitsZoneWidthAngle degrees", THREE.MathUtils.radToDeg(slitsZoneWidthAngle).toFixed(2));
   console.log("slitsZoneStartAngle", THREE.MathUtils.radToDeg(slitsZoneStartAngle).toFixed(2));
@@ -65,21 +66,17 @@ const generateSlits = (
   console.log("slitsZoneAngle cos", Math.cos(slitsZoneStartAngle).toFixed(2));
   console.log("xStart", xStart.toFixed(2), "xEnd", xEnd.toFixed());
   console.log("yStart", yStart.toFixed(2), "yEnd", yEnd.toFixed(2));
-
-  const numSlits = Math.floor((xEnd - xStart) / slitSpacing);
-
+  console.log("numSlits",numSlits);
   console.log("slitSpacing", slitSpacing);
   console.log("width", (xEnd - xStart));
 
-  const xMiddlePoint = (xStart + xEnd) / 2.0;
-  console.log("xMiddlePoint", xMiddlePoint.toFixed(2));
 
   // todo center slits around xMiddlePoint
 
-  for (let i = -Math.floor(numSlits / 2); i <= Math.floor(numSlits / 2); i++) {
+  for (let i = 0; i <= Math.floor(numSlits / 2); i++) {
     // console.log("i", i, "numSlits", numSlits);
 
-    const slitStartX = xMiddlePoint + (i * slitSpacing);
+    const slitStartX = (slitSpacing/4) + (i * slitSpacing);
     const slitEndX = slitStartX + slitWidth;
 
     const slitStartYInner = slitStartX < 0 ? -slitStartX * Math.tan((2 * Math.PI) - slitsZoneStartAngle) : -slitStartX * Math.tan((2 * Math.PI) - slitsZoneStartAngle - slitsZoneWidthAngle);
@@ -96,7 +93,14 @@ const generateSlits = (
     slit.lineTo(slitEndX, slitEndYOuter);
     slit.lineTo(slitEndX, slitEndYInner);
 
-    paths.push(slit); 
+    const slitMirrored = new THREE.Path();
+    slitMirrored.moveTo(-slitStartX, slitStartYInner);
+    slitMirrored.lineTo(-slitStartX, slitStartYOuter);
+    slitMirrored.lineTo(-slitEndX, slitEndYOuter);
+    slitMirrored.lineTo(-slitEndX, slitEndYInner);
+
+    paths.push(slit);
+    paths.push(slitMirrored); 
   }
 
   return paths;
