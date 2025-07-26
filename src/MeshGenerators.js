@@ -6,11 +6,40 @@ const calculateCircleYFromX = (radius, x) => {
   return Math.sqrt(Math.pow(Math.abs(radius), 2) - Math.pow(Math.abs(x), 2));
 };
 
-const generateTriangle = (
-  radius,
-  slitsZoneStartAngle,
-  slitsZoneWidthAngle,
-) => {
+const calculateCircleIntersection = ({
+  radius,       // radius of the circle
+  angleDegrees, // angle in degrees
+  x0 = 0,       // starting x coordinate
+  y0 = 0,       // starting y coordinate
+}) => {
+  const toRadians = (deg) => (deg * Math.PI) / 180;
+  const θ = toRadians(angleDegrees);
+
+  const cosθ = Math.cos(θ);
+  const sinθ = Math.sin(θ);
+
+  // Quadratic equation coefficients: at^2 + bt + c = 0
+  const a = cosθ * cosθ + sinθ * sinθ; // always = 1, but keeping it for clarity
+  const b = 2 * (x0 * cosθ + y0 * sinθ);
+  const c = x0 * x0 + y0 * y0 - radius * radius;
+
+  const discriminant = b * b - 4 * a * c;
+  if (discriminant < 0) return null; // no real intersection
+
+  // Smallest positive t in the direction of the ray
+  const sqrtDisc = Math.sqrt(discriminant);
+  const t1 = (-b + sqrtDisc) / (2 * a);
+  const t2 = (-b - sqrtDisc) / (2 * a);
+  const t = Math.max(t1, t2); // pick the forward intersection
+
+  const x = x0 + t * cosθ;
+  const y = y0 + t * sinθ;
+
+  return { x, y };
+};
+
+
+const generateTriangle = (radius, slitsZoneStartAngle, slitsZoneWidthAngle) => {
   const paths = [];
   
   let xStart = -radius * Math.cos(Math.PI - slitsZoneStartAngle);
@@ -111,6 +140,77 @@ const generateSlits = (
   return paths;
 };
 
+const howManyVerticalSlistFit = (innerDiameter, slitWidth, slitSpacing) => {
+  // n = (d + s) / (w + s)
+  // n - amount of slits
+  // d - inner diameter
+  // s - slit spacing
+  // w - slit width
+
+  return Math.floor((innerDiameter + slitSpacing) / (slitWidth + slitSpacing));
+};
+
+const generateVerticalSlits = ({
+  innerRadius, // radius of the inner circle
+  slitWidth, // width of the slit (hole)
+  slitSpacing, // width of a "bridge" between slits
+  guidingWidth = slitSpacing, // width of the line along x diameter and y radius in the bahtinov mask
+  angleDegrees = 90,
+}) => {
+  console.log(`>> radius`, innerRadius);
+  console.log(`>> innerDiameter`, 2 * innerRadius);
+  console.log(`>> slitWidth`, slitWidth);
+  console.log(`>> slitSpacing`, slitSpacing);
+
+  const slits = [];
+
+  const innerDiameter = 2 * innerRadius;
+  const numVerticalSlits = howManyVerticalSlistFit(
+    innerDiameter,
+    slitWidth,
+    slitSpacing
+  );
+  const widthUsedBySlits =
+    numVerticalSlits * slitWidth + (numVerticalSlits - 1) * slitSpacing;
+
+  console.log(`>> numVerticalSlits`, numVerticalSlits);
+  console.log(`>> widthUsedBySlits`, widthUsedBySlits);  
+
+  const directionMultiplier = (angleDegrees % 360) < 0 ? -1 : 1;
+  console.log(`>> directionMultiplier`, directionMultiplier);
+  const xOffsetFromLeft = (innerDiameter - widthUsedBySlits) / 2;  
+  const xStart = -innerRadius + xOffsetFromLeft;
+  const yStart = (directionMultiplier / 2) * guidingWidth; // Middle of the circle
+
+  for (let i = 0; i < numVerticalSlits; i++) {
+    const x = xStart + i * (slitWidth + slitSpacing);
+    const slit = new THREE.Path();
+
+    const intersection1 = calculateCircleIntersection({
+      radius: innerRadius,
+      angleDegrees,
+      x0: x,
+      y0: yStart,
+    });
+
+    const intersection2 = calculateCircleIntersection({
+      radius: innerRadius,
+      angleDegrees,
+      x0: x + slitWidth,
+      y0: yStart
+    });
+
+    slit.moveTo(x, yStart); // start from center of the circle
+    slit.lineTo(intersection1.x, intersection1.y);
+    slit.lineTo(intersection2.x, intersection2.y);
+    slit.lineTo(x + slitWidth, yStart);
+
+    slits.push(slit);
+  }
+
+  return slits;
+};
+
 const generate2dBahtinovMaskMesh = (
   newFocalLength,
   newApertureDiameter,
@@ -134,22 +234,36 @@ const generate2dBahtinovMaskMesh = (
     false
   );
 
-  const slits = generateSlits(
-    innerRadius,
-     Math.PI / 16, // slitsPatternAngle
-    (3 / 4) * Math.PI   , // Кут старту зони (150°)
-    // (3 / 4) * Math.PI + Math.PI /8  , // Кут старту зони (150°)
-    Math.PI / 2, // Кутова зона (90)
-   // slitWidth // Товщина щілини
-   1
-  );
+  // outerCircle.holes.push(new THREE.Shape().absarc(0, 0, innerRadius, 0, Math.PI * 2, false));
 
-  slits.forEach((slit) => outerCircle.holes.push(slit));
+  const verticalSlits = generateVerticalSlits({
+    innerRadius: innerRadius,
+    slitWidth: slitWidth,
+    slitSpacing: 1,
+    guidingWidth: 10,
+    angleDegrees: -90,
+  });
+
+  verticalSlits.forEach((slit) => outerCircle.holes.push(slit));
+
+  console.log(`>> verticalSlits`, verticalSlits);
+
+  // const slits = generateSlits(
+  //   innerRadius,
+  //    Math.PI / 16, // slitsPatternAngle
+  //   (3 / 4) * Math.PI   , // Кут старту зони (150°)
+  //   // (3 / 4) * Math.PI + Math.PI /8  , // Кут старту зони (150°)
+  //   Math.PI / 2, // Кутова зона (90)
+  //   // slitWidth // Товщина щілини
+  //   2
+  // );
+
+  // slits.forEach((slit) => outerCircle.holes.push(slit));
 
   const extrudeSettings = {
     depth: 3,
     bevelEnabled: false,
-    curveSegments: 64
+    curveSegments: 64,
   };
 
   const geometry = new THREE.ExtrudeGeometry(outerCircle, extrudeSettings);
