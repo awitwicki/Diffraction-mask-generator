@@ -11,12 +11,10 @@ function App() {
   const [focalLength, setFocalLength] = useState(416);
   const [apertureDiameter, setApertureDiameter] = useState(65);
   const [telescopeInnerDiameter, setTelescopeInnerDiameter] = useState(80);
-  const [telescopeOutDiameter, setTelescopeOutDiameter] = useState(160);
-  const [wallThickness, setWallThickness] = useState(3);
-  const [slitWidth, setSlitWidth] = useState(2.08);  // todo: fix, hardcoded because it crashes when can't find intersection
-  const [slitSpacing, setSlitSpacing] = useState(1);
-  const [guidingWidth, setGuidingWidth] = useState(3);
-  const [angleDegrees, setAngleDegrees] = useState(60);
+
+  // For v2
+  // const [telescopeOutDiameter, setTelescopeOutDiameter] = useState(160);
+  // const [wallThickness, setWallThickness] = useState(3);
 
   const containerRef = useRef(null);
   const sceneRef = useRef(null);
@@ -94,13 +92,9 @@ function App() {
     }
     
     combinedMeshRef.current = generate2dBahtinovMaskMesh({
-      newFocalLength: focalLength,
-      newApertureDiameter: apertureDiameter,
-      newTelescopeInnerDiameter: telescopeInnerDiameter,
-      slitWidth,
-      slitSpacing,
-      guidingWidth,
-      angleDegrees,
+      focalLength,
+      apertureDiameter,
+      telescopeInnerDiameter
     });
     
     sceneRef.current.add(combinedMeshRef.current);
@@ -110,12 +104,9 @@ function App() {
     }
     
   }, [
-    focalLength, apertureDiameter,
-    telescopeInnerDiameter,
-    slitWidth,
-    slitSpacing,
-    guidingWidth,
-    angleDegrees,
+    focalLength,
+    apertureDiameter,
+    telescopeInnerDiameter
   ]);
 
   const exportSTL = () => {
@@ -179,61 +170,8 @@ function App() {
           onChange={(e) => setTelescopeInnerDiameter(Number(e.target.value))}
         />
       </div>
-
-      <div className="input-group">
-        <label htmlFor="slitWidth">Ширина щілини (мм):</label>
-        <input 
-          disabled={true}  // todo: fix, hardcoded because it crashes often because can't find intersection
-          type="number" 
-          id="slitWidth" 
-          value={slitWidth} 
-          min="0.1" 
-          max="10"
-          step="0.1"
-          onChange={(e) => setSlitWidth(Number(e.target.value))}
-        />
-      </div>
-
-      <div className="input-group">
-        <label htmlFor="slitSpacing">Відстань між щілинами (мм):</label>
-        <input 
-          type="number" 
-          id="slitSpacing" 
-          value={slitSpacing} 
-          min="0.1" 
-          max="10"
-          step="0.1"
-          onChange={(e) => setSlitSpacing(Number(e.target.value))}
-        />
-      </div>
-
-      <div className="input-group">
-        <label htmlFor="guidingWidth">Ширина направляючих (мм):</label>  
-        <input 
-          type="number" 
-          id="guidingWidth" 
-          value={guidingWidth} 
-          min="1" 
-          max="10"
-          step="1"
-          onChange={(e) => setGuidingWidth(Number(e.target.value))}
-        />
-      </div>
-
-      <div className="input-group">
-        <label htmlFor="angleDegrees">Кут нахилу щілин (градусів):</label>
-        <input 
-          type="number" 
-          id="angleDegrees" 
-          value={angleDegrees} 
-          min="0" 
-          max="89" 
-          step="1"  
-          onChange={(e) => setAngleDegrees(Number(e.target.value))}
-        />
-      </div>
       
-            {/* for v2 */}
+      {/* for v2 */}
       {/* <div className="input-group">
         <label htmlFor="telescopeOutDiameter">Зовнішній діаметр труби (мм):</label>
         <input 

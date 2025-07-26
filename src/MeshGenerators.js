@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { degToRad } from "three/src/math/MathUtils.js";
 
 const MM_TO_M = 0.001;
+const BASE_ANGLE_DEGREES = 60;
 
 const calculateCircleYFromX = (radius, x) => {
   return Math.sqrt(Math.pow(Math.abs(radius), 2) - Math.pow(Math.abs(x), 2));
@@ -215,22 +216,21 @@ const generateVerticalSlits = ({
 };
 
 const generate2dBahtinovMaskMesh = ({
-  newFocalLength,
-  newApertureDiameter,
-  newTelescopeInnerDiameter,
-  slitWidth,
-  slitSpacing,
-  guidingWidth,
-  angleDegrees,
+  focalLength,
+  apertureDiameter,
+  telescopeInnerDiameter
 }) => {
-  const innerRadius = newApertureDiameter / 2;
-  const outerRadius = newTelescopeInnerDiameter / 2;
+  const innerRadius = apertureDiameter / 2;
+  const outerRadius = telescopeInnerDiameter / 2;
 
-  // const bahtinovFactor = 200.0; // 150 - 200
-  // let slitWidth = newFocalLength / bahtinovFactor;
-  // if (slitWidth < 1) {
-  //   slitWidth *= 3;
-  // }
+  const bahtinovFactor = 200.0; // 150 - 200
+  let slitWidth = focalLength / bahtinovFactor;
+  if (slitWidth < 1) {
+    slitWidth *= 3;
+  }
+
+  const guidingWidth = Math.max(slitWidth, 1);
+  const slitSpacing = slitWidth;
 
   const outerCircle = new THREE.Shape().absarc(
     0,
@@ -265,7 +265,7 @@ const generate2dBahtinovMaskMesh = ({
     angleDegrees: -90,
   });
 
-  const topAngleDegrees = angleDegrees;
+  const topAngleDegrees = BASE_ANGLE_DEGREES;
 
   const topSlitLowerWidth = slitWidth / Math.sin(degToRad(topAngleDegrees));
   const topSlitLowerSpacing = slitSpacing / Math.sin(degToRad(topAngleDegrees));
@@ -345,7 +345,7 @@ const generate2dBahtinovMaskMesh = ({
   const extrudeSettings = {
     depth: 3,
     bevelEnabled: false,
-    curveSegments: 64,
+    curveSegments: 64
   };
 
   const geometry = new THREE.ExtrudeGeometry(outerCircle, extrudeSettings);
