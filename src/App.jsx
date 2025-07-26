@@ -11,8 +11,10 @@ function App() {
   const [focalLength, setFocalLength] = useState(416);
   const [apertureDiameter, setApertureDiameter] = useState(65);
   const [telescopeInnerDiameter, setTelescopeInnerDiameter] = useState(80);
-  const [telescopeOutDiameter, setTelescopeOutDiameter] = useState(160);
-  const [wallThickness, setWallThickness] = useState(3);
+
+  // For v2
+  // const [telescopeOutDiameter, setTelescopeOutDiameter] = useState(160);
+  // const [wallThickness, setWallThickness] = useState(3);
 
   const containerRef = useRef(null);
   const sceneRef = useRef(null);
@@ -28,7 +30,7 @@ function App() {
     scene.background = new THREE.Color(0xf0f0f0);
     sceneRef.current = scene;
     var camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 10);
-    camera.position.set(0, 0.25, -0.25);
+    camera.position.set(0, 0.125, -0.035);
 
     var renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -89,7 +91,11 @@ function App() {
       }
     }
     
-    combinedMeshRef.current = generate2dBahtinovMaskMesh(focalLength, apertureDiameter, telescopeInnerDiameter, telescopeOutDiameter, wallThickness);
+    combinedMeshRef.current = generate2dBahtinovMaskMesh({
+      focalLength,
+      apertureDiameter,
+      telescopeInnerDiameter
+    });
     
     sceneRef.current.add(combinedMeshRef.current);
 
@@ -97,7 +103,11 @@ function App() {
       rendererRef.current.render(sceneRef.current, cameraRef.current);
     }
     
-  }, [focalLength, apertureDiameter, telescopeInnerDiameter, telescopeOutDiameter, wallThickness]);
+  }, [
+    focalLength,
+    apertureDiameter,
+    telescopeInnerDiameter
+  ]);
 
   const exportSTL = () => {
     if (!combinedMeshRef.current) return;
@@ -161,7 +171,7 @@ function App() {
         />
       </div>
       
-            {/* for v2 */}
+      {/* for v2 */}
       {/* <div className="input-group">
         <label htmlFor="telescopeOutDiameter">Зовнішній діаметр труби (мм):</label>
         <input 
