@@ -214,19 +214,23 @@ const generateVerticalSlits = ({
   return slits;
 };
 
-const generate2dBahtinovMaskMesh = (
+const generate2dBahtinovMaskMesh = ({
   newFocalLength,
   newApertureDiameter,
-  newTelescopeInnerDiameter
-) => {
+  newTelescopeInnerDiameter,
+  slitWidth,
+  slitSpacing,
+  guidingWidth,
+  angleDegrees,
+}) => {
   const innerRadius = newApertureDiameter / 2;
   const outerRadius = newTelescopeInnerDiameter / 2;
 
-  const bahtinovFactor = 200.0; // 150 - 200
-  let slitWidth = newFocalLength / bahtinovFactor;
-  if (slitWidth < 1) {
-    slitWidth *= 3;
-  }
+  // const bahtinovFactor = 200.0; // 150 - 200
+  // let slitWidth = newFocalLength / bahtinovFactor;
+  // if (slitWidth < 1) {
+  //   slitWidth *= 3;
+  // }
 
   const outerCircle = new THREE.Shape().absarc(
     0,
@@ -237,8 +241,6 @@ const generate2dBahtinovMaskMesh = (
     false
   );
 
-  const slitSpacing = 1;
-  const guidingWidth = 3;
   const bottomAngleDegrees = -90;
   const bottomAngleDirectionMultiplier = (bottomAngleDegrees % 360) < 0 ? -1 : 1;
 
@@ -263,7 +265,7 @@ const generate2dBahtinovMaskMesh = (
     angleDegrees: -90,
   });
 
-  const topAngleDegrees = 45;
+  const topAngleDegrees = angleDegrees;
 
   const topSlitLowerWidth = slitWidth / Math.sin(degToRad(topAngleDegrees));
   const topSlitLowerSpacing = slitSpacing / Math.sin(degToRad(topAngleDegrees));
