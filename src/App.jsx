@@ -152,7 +152,7 @@ function App() {
           id="apertureDiameter" 
           value={apertureDiameter} 
           min="50" 
-          max="500" 
+          max={telescopeInnerDiameter - 1}
           step="1"
           onChange={(e) => setApertureDiameter(Number(e.target.value))}
         />
@@ -164,7 +164,7 @@ function App() {
           type="number" 
           id="telescopeInnerDiameter" 
           value={telescopeInnerDiameter} 
-          min="40" 
+          min={apertureDiameter + 1} 
           max="400" 
           step="1"
           onChange={(e) => setTelescopeInnerDiameter(Number(e.target.value))}
