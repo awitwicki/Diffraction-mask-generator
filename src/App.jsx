@@ -4,6 +4,8 @@ import './App.css';
 import * as THREE from 'three';
 import { STLExporter } from 'three/addons/exporters/STLExporter.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 import generate2dBahtinovMaskMesh from './MeshGenerators'
 
 function App() {
@@ -56,6 +58,23 @@ function App() {
 
     const gridHelper = new THREE.GridHelper(0.2, 20);
     sceneRef.current.add(gridHelper);
+
+    // Add annotation text
+    const fontLoader = new FontLoader();
+    fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
+      const textMaterial = new THREE.MeshBasicMaterial({ color: 0x1a1a1a });
+      const textGeometryX = new TextGeometry('20 x 20 cm', {
+        font: font,
+        size: 0.01,
+        height: 0.001,
+        depth: 0.000001,
+      });
+   
+      const textMesh = new THREE.Mesh(textGeometryX, textMaterial);
+      textMesh.rotation.set(Math.PI / 2, Math.PI, 0);
+      textMesh.position.set(0.095, 0, -0.095);
+      sceneRef.current.add(textMesh);
+    });
 
     var animate = function () {
       requestAnimationFrame(animate);
