@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { degToRad } from "three/src/math/MathUtils.js";
 
 const MM_TO_M = 0.001;
 
@@ -140,22 +141,25 @@ const generateSlits = (
   return paths;
 };
 
-const howManyVerticalSlistFit = (innerDiameter, slitWidth, slitSpacing) => {
+const calculateSlitsFitting = (baseDistance, slitWidth, slitSpacing) => {
+  const numSlits = Math.floor((baseDistance + slitSpacing) / (slitWidth + slitSpacing));
   // n = (d + s) / (w + s)
   // n - amount of slits
-  // d - inner diameter
+  // d - base distance
   // s - slit spacing
   // w - slit width
 
-  return Math.floor((innerDiameter + slitSpacing) / (slitWidth + slitSpacing));
+  return { numSlits, widthUsedBySlits: numSlits * slitWidth + (numSlits - 1) * slitSpacing };
 };
 
 const generateVerticalSlits = ({
-  innerRadius, // radius of the inner circle
-  slitWidth, // width of the slit (hole)
-  slitSpacing, // width of a "bridge" between slits
-  guidingWidth = slitSpacing, // width of the line along x diameter and y radius in the bahtinov mask
-  angleDegrees = 90,
+  startingPoint,  // x, y
+  baseDistance,   // distance to populate slits
+  innerRadius,    // radius of the inner circle
+  slitWidth,      // width of the slit (hole)
+  slitSpacing,    // width of a "bridge" between slits
+  slitStepMultiplier, // { x, y } - how much to move the slit in x and y direction
+  angleDegrees = 90,  // angle of the slit
 }) => {
   console.log(`>> radius`, innerRadius);
   console.log(`>> innerDiameter`, 2 * innerRadius);
@@ -164,46 +168,45 @@ const generateVerticalSlits = ({
 
   const slits = [];
 
-  const innerDiameter = 2 * innerRadius;
-  const numVerticalSlits = howManyVerticalSlistFit(
-    innerDiameter,
+  const { numSlits: numVerticalSlits, widthUsedBySlits } = calculateSlitsFitting(
+    baseDistance,
     slitWidth,
     slitSpacing
   );
-  const widthUsedBySlits =
-    numVerticalSlits * slitWidth + (numVerticalSlits - 1) * slitSpacing;
 
   console.log(`>> numVerticalSlits`, numVerticalSlits);
   console.log(`>> widthUsedBySlits`, widthUsedBySlits);  
 
   const directionMultiplier = (angleDegrees % 360) < 0 ? -1 : 1;
   console.log(`>> directionMultiplier`, directionMultiplier);
-  const xOffsetFromLeft = (innerDiameter - widthUsedBySlits) / 2;  
-  const xStart = -innerRadius + xOffsetFromLeft;
-  const yStart = (directionMultiplier / 2) * guidingWidth; // Middle of the circle
 
   for (let i = 0; i < numVerticalSlits; i++) {
-    const x = xStart + i * (slitWidth + slitSpacing);
+    const x1 = startingPoint.x + slitStepMultiplier.x * i * (slitWidth + slitSpacing);
+    const y1 = startingPoint.y + slitStepMultiplier.y * i * (slitWidth + slitSpacing);
+
+    const x2 = x1 + slitStepMultiplier.x * slitWidth;
+    const y2 = y1 + slitStepMultiplier.y * slitWidth;
+
     const slit = new THREE.Path();
 
     const intersection1 = calculateCircleIntersection({
       radius: innerRadius,
       angleDegrees,
-      x0: x,
-      y0: yStart,
+      x0: x1,
+      y0: y1,
     });
 
     const intersection2 = calculateCircleIntersection({
       radius: innerRadius,
       angleDegrees,
-      x0: x + slitWidth,
-      y0: yStart
+      x0: x2,
+      y0: y2,
     });
 
-    slit.moveTo(x, yStart); // start from center of the circle
+    slit.moveTo(x1, y1); // start from center of the circle
     slit.lineTo(intersection1.x, intersection1.y);
     slit.lineTo(intersection2.x, intersection2.y);
-    slit.lineTo(x + slitWidth, yStart);
+    slit.lineTo(x2, y2);
 
     slits.push(slit);
   }
@@ -234,19 +237,96 @@ const generate2dBahtinovMaskMesh = (
     false
   );
 
-  // outerCircle.holes.push(new THREE.Shape().absarc(0, 0, innerRadius, 0, Math.PI * 2, false));
+  const slitSpacing = 1;
+  const guidingWidth = 3;
+  const bottomAngleDegrees = -90;
+  const bottomAngleDirectionMultiplier = (bottomAngleDegrees % 360) < 0 ? -1 : 1;
 
-  const verticalSlits = generateVerticalSlits({
-    innerRadius: innerRadius,
-    slitWidth: slitWidth,
-    slitSpacing: 1,
-    guidingWidth: 10,
+  const { widthUsedBySlits } = calculateSlitsFitting(
+    innerRadius * 2,
+    slitWidth,
+    slitSpacing
+  );
+  const xOffset = (innerRadius * 2 - widthUsedBySlits) / 2;
+  const startingPoint = { 
+    x: -innerRadius + xOffset,
+    y: (bottomAngleDirectionMultiplier / 2) * guidingWidth, 
+  };
+
+  const bottomSlits = generateVerticalSlits({
+    startingPoint,
+    baseDistance: innerRadius * 2,
+    innerRadius,
+    slitWidth,
+    slitSpacing,
+    slitStepMultiplier: { x: 1, y: 0 },
     angleDegrees: -90,
   });
 
-  verticalSlits.forEach((slit) => outerCircle.holes.push(slit));
+  const topAngleDegrees = 45;
 
-  console.log(`>> verticalSlits`, verticalSlits);
+  const topSlitLowerWidth = slitWidth / Math.sin(degToRad(topAngleDegrees));
+  const topSlitLowerSpacing = slitSpacing / Math.sin(degToRad(topAngleDegrees));
+
+  const topSlitUpperWidth = slitWidth / Math.cos(degToRad(topAngleDegrees));
+  const topSlitUpperSpacing = slitSpacing / Math.cos(degToRad(topAngleDegrees));
+
+  console.log(`>> topSlitLowerWidth`, topSlitLowerWidth);
+  console.log(`>> topSlitLowerSpacing`, topSlitLowerSpacing);
+  console.log(`>> topSlitUpperWidth`, topSlitUpperWidth);
+  console.log(`>> topSlitUpperSpacing`, topSlitUpperSpacing);
+
+  const topLeftBottomSlits = generateVerticalSlits({
+    startingPoint: { x: guidingWidth / 2 + 1 * topSlitLowerSpacing, y: guidingWidth / 2 },
+    baseDistance: innerRadius - guidingWidth / 2 - 1 * topSlitLowerSpacing,
+    innerRadius,
+    slitWidth: topSlitLowerWidth,
+    slitSpacing: topSlitLowerSpacing,
+    slitStepMultiplier: { x: 1, y: 0 },
+    angleDegrees: topAngleDegrees,
+  });
+
+  const topLeftUpperSlits = generateVerticalSlits({
+    startingPoint: { x: guidingWidth / 2, y: guidingWidth / 2 },
+    baseDistance: innerRadius - guidingWidth / 2,
+    innerRadius,
+    slitWidth: topSlitUpperWidth,
+    slitSpacing: topSlitUpperSpacing,
+    slitStepMultiplier: { x: 0, y: 1 },
+    angleDegrees: topAngleDegrees,
+  });
+
+  const topRightBottomSlits = generateVerticalSlits({
+    startingPoint: { x: -guidingWidth / 2 - 1 * topSlitLowerSpacing, y: guidingWidth / 2 },
+    baseDistance: innerRadius - guidingWidth / 2 - 1 * topSlitLowerSpacing,
+    innerRadius,
+    slitWidth: topSlitLowerWidth,
+    slitSpacing: topSlitLowerSpacing,
+    slitStepMultiplier: { x: -1, y: 0 },
+    angleDegrees: 180 - topAngleDegrees,
+  });
+
+  const topRightUpperSlits = generateVerticalSlits({
+    startingPoint: { x: -guidingWidth / 2, y: guidingWidth / 2 },
+    baseDistance: innerRadius - guidingWidth / 2,
+    innerRadius,
+    slitWidth: topSlitUpperWidth,
+    slitSpacing: topSlitUpperSpacing,
+    slitStepMultiplier: { x: 0, y: 1 },
+    angleDegrees: 180 - topAngleDegrees,
+  });
+
+  const slits = [
+    ...bottomSlits,
+    ...topLeftUpperSlits,
+    ...topLeftBottomSlits,
+    ...topRightBottomSlits,
+    ...topRightUpperSlits,
+  ];
+
+  slits.forEach((slit) => outerCircle.holes.push(slit));
+
+  console.log(`>> verticalSlits`, slits);
 
   // const slits = generateSlits(
   //   innerRadius,
