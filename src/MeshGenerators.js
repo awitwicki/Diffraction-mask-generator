@@ -113,6 +113,7 @@ const generateVerticalSlits = ({
 };
 
 const generate2dBahtinovMaskMesh = ({
+  maskThickness,
   focalLength,
   apertureDiameter,
   telescopeInnerDiameter
@@ -228,7 +229,7 @@ const generate2dBahtinovMaskMesh = ({
   console.log(`>> verticalSlits`, slits);
 
   const extrudeSettings = {
-    depth: 3,
+    depth: maskThickness,
     bevelEnabled: false,
     curveSegments: 64
   };
@@ -241,7 +242,7 @@ const generate2dBahtinovMaskMesh = ({
   });
 
   const mesh = new THREE.Mesh(geometry, material);
-  mesh.position.set(0, 3 * MM_TO_M, 0);
+  mesh.position.set(0, maskThickness * MM_TO_M, 0);
   mesh.rotation.set(Math.PI / 2, 0, 0);
   mesh.scale.set(MM_TO_M, MM_TO_M, MM_TO_M);
 
@@ -250,6 +251,7 @@ const generate2dBahtinovMaskMesh = ({
 
 
 const generate3dBahtinovMaskMesh = ({
+  maskThickness,
   focalLength,
   apertureDiameter,
   telescopeInnerDiameter,
@@ -360,7 +362,7 @@ const generate3dBahtinovMaskMesh = ({
   slits.forEach((slit) => outerCircle.holes.push(slit));
 
   const extrudeSettings = {
-    depth: 3,
+    depth: maskThickness,
     bevelEnabled: false,
     curveSegments: CURVE_SEGMENTS
   };
@@ -390,7 +392,7 @@ const generate3dBahtinovMaskMesh = ({
   let geometry = BufferGeometryUtils.mergeGeometries([baseGeometry, wallGeometry],true)
 
   const mesh = new THREE.Mesh(geometry, material);
-  mesh.position.set(0, 3 * MM_TO_M, 0);
+  mesh.position.set(0, maskThickness * MM_TO_M, 0);
   mesh.rotation.set(Math.PI / 2, 0, 0);
   mesh.scale.set(MM_TO_M, MM_TO_M, MM_TO_M);
 

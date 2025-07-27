@@ -13,6 +13,7 @@ import {
 } from "./MeshGenerators";
 
 function App() {
+  const [maskThickness, setMaskThickness] = useState(1);
   const [focalLength, setFocalLength] = useState(400);
   const [apertureDiameter, setApertureDiameter] = useState(51);
   const [telescopeInnerDiameter, setTelescopeInnerDiameter] = useState(80);
@@ -127,6 +128,7 @@ function App() {
     try {
       combinedMeshRef.current = isAdvancedModeChecked
         ? generate3dBahtinovMaskMesh({
+            maskThickness,
             focalLength,
             apertureDiameter,
             telescopeInnerDiameter,
@@ -134,6 +136,7 @@ function App() {
             wallHeight,
           })
         : generate2dBahtinovMaskMesh({
+            maskThickness,
             focalLength,
             apertureDiameter,
             telescopeInnerDiameter,
@@ -149,6 +152,7 @@ function App() {
       console.log(e);
     }
   }, [
+    maskThickness,
     focalLength,
     apertureDiameter,
     telescopeInnerDiameter,
@@ -190,6 +194,19 @@ function App() {
             uncheckedIcon={false}
             checkedIcon={false}
             onColor="#2693e6"
+          />
+        </div>
+
+        <div className="input-group">
+          <label htmlFor="maskThickness">Товщина маски (мм):</label>
+            <input
+            type="number"
+            id="maskThickness"
+            value={maskThickness}
+            min="1"
+            max="5"
+            step="1"
+            onChange={(e) => setMaskThickness(Number(e.target.value))}
           />
         </div>
 
