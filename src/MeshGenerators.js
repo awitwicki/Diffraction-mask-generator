@@ -1,8 +1,10 @@
 import * as THREE from "three";
 import { degToRad } from "three/src/math/MathUtils.js";
+import  * as BufferGeometryUtils  from 'three/addons/utils/BufferGeometryUtils.js';
 
 const MM_TO_M = 0.001;
 const BASE_ANGLE_DEGREES = 60;
+const CURVE_SEGMENTS = 64;
 
 const calculateCircleIntersection = ({
   radius,       // radius of the circle
@@ -22,6 +24,7 @@ const calculateCircleIntersection = ({
   const c = x0 * x0 + y0 * y0 - radius * radius;
 
   const discriminant = b * b - 4 * a * c;
+  // TODO fix bug
   if (discriminant < 0) return null; // no real intersection
 
   // Smallest positive t in the direction of the ray
@@ -245,4 +248,153 @@ const generate2dBahtinovMaskMesh = ({
   return mesh;
 };
 
-export default generate2dBahtinovMaskMesh;
+
+const generate3dBahtinovMaskMesh = ({
+  focalLength,
+  apertureDiameter,
+  telescopeInnerDiameter,
+  wallThickness,
+  wallHeight
+}) => {
+  const innerRadius = apertureDiameter / 2;
+  const outerRadius = wallThickness + telescopeInnerDiameter / 2;
+
+  const bahtinovFactor = 200.0; // 150 - 200
+  let slitWidth = focalLength / bahtinovFactor;
+  if (slitWidth < 1) {
+    slitWidth *= 3;
+  }
+
+  const guidingWidth = Math.max(slitWidth, 1);
+  const slitSpacing = slitWidth;
+
+  const outerCircle = new THREE.Shape().absarc(
+    0,
+    0,
+    outerRadius,
+    0,
+    Math.PI * 2,
+    false
+  );
+
+  const bottomAngleDegrees = -90;
+  const bottomAngleDirectionMultiplier = (bottomAngleDegrees % 360) < 0 ? -1 : 1;
+
+  const { widthUsedBySlits } = calculateSlitsFitting(
+    innerRadius * 2,
+    slitWidth,
+    slitSpacing
+  );
+  const xOffset = (innerRadius * 2 - widthUsedBySlits) / 2;
+  const startingPoint = { 
+    x: -innerRadius + xOffset,
+    y: (bottomAngleDirectionMultiplier / 2) * guidingWidth, 
+  };
+
+  const bottomSlits = generateVerticalSlits({
+    startingPoint,
+    baseDistance: innerRadius * 2,
+    innerRadius,
+    slitWidth,
+    slitSpacing,
+    slitStepMultiplier: { x: 1, y: 0 },
+    angleDegrees: -90,
+  });
+
+  const topAngleDegrees = BASE_ANGLE_DEGREES;
+
+  const topSlitLowerWidth = slitWidth / Math.sin(degToRad(topAngleDegrees));
+  const topSlitLowerSpacing = slitSpacing / Math.sin(degToRad(topAngleDegrees));
+
+  const topSlitUpperWidth = slitWidth / Math.cos(degToRad(topAngleDegrees));
+  const topSlitUpperSpacing = slitSpacing / Math.cos(degToRad(topAngleDegrees));
+
+  const topLeftBottomSlits = generateVerticalSlits({
+    startingPoint: { x: guidingWidth / 2 + 1 * topSlitLowerSpacing, y: guidingWidth / 2 },
+    baseDistance: innerRadius - guidingWidth / 2 - 1 * topSlitLowerSpacing,
+    innerRadius,
+    slitWidth: topSlitLowerWidth,
+    slitSpacing: topSlitLowerSpacing,
+    slitStepMultiplier: { x: 1, y: 0 },
+    angleDegrees: topAngleDegrees,
+  });
+
+  const topLeftUpperSlits = generateVerticalSlits({
+    startingPoint: { x: guidingWidth / 2, y: guidingWidth / 2 },
+    baseDistance: innerRadius - guidingWidth / 2,
+    innerRadius,
+    slitWidth: topSlitUpperWidth,
+    slitSpacing: topSlitUpperSpacing,
+    slitStepMultiplier: { x: 0, y: 1 },
+    angleDegrees: topAngleDegrees,
+  });
+
+  const topRightBottomSlits = generateVerticalSlits({
+    startingPoint: { x: -guidingWidth / 2 - 1 * topSlitLowerSpacing, y: guidingWidth / 2 },
+    baseDistance: innerRadius - guidingWidth / 2 - 1 * topSlitLowerSpacing,
+    innerRadius,
+    slitWidth: topSlitLowerWidth,
+    slitSpacing: topSlitLowerSpacing,
+    slitStepMultiplier: { x: -1, y: 0 },
+    angleDegrees: 180 - topAngleDegrees,
+  });
+
+  const topRightUpperSlits = generateVerticalSlits({
+    startingPoint: { x: -guidingWidth / 2, y: guidingWidth / 2 },
+    baseDistance: innerRadius - guidingWidth / 2,
+    innerRadius,
+    slitWidth: topSlitUpperWidth,
+    slitSpacing: topSlitUpperSpacing,
+    slitStepMultiplier: { x: 0, y: 1 },
+    angleDegrees: 180 - topAngleDegrees,
+  });
+
+  const slits = [
+    ...bottomSlits,
+    ...topLeftUpperSlits,
+    ...topLeftBottomSlits,
+    ...topRightBottomSlits,
+    ...topRightUpperSlits,
+  ];
+
+  slits.forEach((slit) => outerCircle.holes.push(slit));
+
+  const extrudeSettings = {
+    depth: 3,
+    bevelEnabled: false,
+    curveSegments: CURVE_SEGMENTS
+  };
+
+    const wallExtrudeSettings = {
+    depth: wallHeight,
+    bevelEnabled: false,
+    curveSegments: CURVE_SEGMENTS
+  };
+
+  // const geometry = new THREE.ExtrudeGeometry(outerCircle, extrudeSettings);
+  const material = new THREE.MeshPhongMaterial({
+    color: 0x3498db,
+    flatShading: true,
+    side: THREE.DoubleSide,
+  });
+
+  const baseGeometry = new THREE.ExtrudeGeometry(outerCircle, extrudeSettings);
+
+  const wallCircle = new THREE.Shape().absarc(0,0,outerRadius,0,Math.PI * 2,false);
+  const wallCircleHole = new THREE.Shape().absarc(0,0,outerRadius-wallThickness,0,Math.PI * 2,false);
+  wallCircle.holes.push(wallCircleHole);
+
+  const wallGeometry = new THREE.ExtrudeGeometry(wallCircle, wallExtrudeSettings);
+  wallGeometry.rotateX(Math.PI);
+
+  let geometry = BufferGeometryUtils.mergeGeometries([baseGeometry, wallGeometry],true)
+
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.position.set(0, 3 * MM_TO_M, 0);
+  mesh.rotation.set(Math.PI / 2, 0, 0);
+  mesh.scale.set(MM_TO_M, MM_TO_M, MM_TO_M);
+
+  return mesh;
+};
+
+export { generate2dBahtinovMaskMesh, generate3dBahtinovMaskMesh };
