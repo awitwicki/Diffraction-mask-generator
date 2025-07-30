@@ -267,12 +267,6 @@ const generate3dBahtinovMaskMesh = ({
     curveSegments: CURVE_SEGMENTS
   };
 
-  const wallExtrudeSettings = {
-    depth: wallHeight,
-    bevelEnabled: false,
-    curveSegments: CURVE_SEGMENTS
-  };
-
   const material = new THREE.MeshPhongMaterial({
     color: 0x3498db,
     flatShading: true,
@@ -281,14 +275,35 @@ const generate3dBahtinovMaskMesh = ({
 
   const baseGeometry = new THREE.ExtrudeGeometry(bahtinovMaskShape, extrudeSettings);
 
+  // Wall
   const wallCircle = new THREE.Shape().absarc(0,0,outerRadius,0,Math.PI * 2,false);
   const wallCircleHole = new THREE.Shape().absarc(0,0,outerRadius-wallThickness,0,Math.PI * 2,false);
   wallCircle.holes.push(wallCircleHole);
 
+  const wallExtrudeSettings = {
+    depth: wallHeight,
+    bevelEnabled: false,
+    curveSegments: CURVE_SEGMENTS
+  };
+
   const wallGeometry = new THREE.ExtrudeGeometry(wallCircle, wallExtrudeSettings);
   wallGeometry.rotateX(Math.PI);
 
-  let geometry = BufferGeometryUtils.mergeGeometries([baseGeometry, wallGeometry],true)
+  // Chamfer
+  const chamferCircle = new THREE.Shape().absarc(0,0,outerRadius,0,Math.PI * 2,false);
+  const chamferCircleHole = new THREE.Shape().absarc(0,0,outerRadius-wallThickness,0,Math.PI * 2,false);
+  chamferCircle.holes.push(chamferCircleHole);
+
+  const chamferExtrudeSettings = {
+    depth: maskThickness,
+    bevelEnabled: false,
+    curveSegments: CURVE_SEGMENTS
+  };
+
+  // TODO: add actual chamfer
+  const chamferGeometry = new THREE.ExtrudeGeometry(chamferCircle, chamferExtrudeSettings);
+
+  const geometry = BufferGeometryUtils.mergeGeometries([baseGeometry, wallGeometry, chamferGeometry], true)
 
   const mesh = new THREE.Mesh(geometry, material);
   mesh.position.set(0, maskThickness * MM_TO_M, 0);
