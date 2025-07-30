@@ -23,8 +23,16 @@ const calculateCircleIntersection = ({
   const b = 2 * (x0 * cosθ + y0 * sinθ);
   const c = x0 * x0 + y0 * y0 - radius * radius;
 
-  const discriminant = b * b - 4 * a * c;
-  // TODO fix bug
+
+  let discriminant = b * b - 4 * a * c;
+
+  // If the discriminant is very close to zero (due to floating-point precision errors),
+  // treat it as zero to avoid incorrectly rejecting a valid intersection.
+  // This handles cases where the ray just touches the circle (tangent) with one intersection point.
+  if (discriminant > -1e-7 && discriminant < 0) {
+    discriminant = 0;
+  }
+
   if (discriminant < 0) return null; // no real intersection
 
   // Smallest positive t in the direction of the ray
