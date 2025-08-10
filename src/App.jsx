@@ -32,6 +32,16 @@ function App() {
   const combinedMeshRef = useRef(null);
   const requestIdRef = useRef(null);
 
+  const clampBetweenMinAndMax = (e) => {
+    const value = Number(e.target.value);
+    const min = Number(e.target.min);
+    const max = Number(e.target.max);
+
+    const safeValue = Math.min(Math.max(value, min), max);
+
+    return safeValue;
+  };
+
   useEffect(() => {
     // window.addEventListener('resize', onWindowResize);
 
@@ -206,7 +216,7 @@ function App() {
             min="1"
             max="5"
             step="1"
-            onChange={(e) => setMaskThickness(Number(e.target.value))}
+            onChange={(e) => setMaskThickness(clampBetweenMinAndMax(e))}
           />
         </div>
 
@@ -219,7 +229,7 @@ function App() {
             min="100"
             max="3000"
             step="1"
-            onChange={(e) => setFocalLength(Number(e.target.value))}
+            onChange={(e) => setFocalLength(clampBetweenMinAndMax(e))}
           />
         </div>
 
@@ -232,7 +242,7 @@ function App() {
             min="50"
             max={telescopeInnerDiameter - 1}
             step="1"
-            onChange={(e) => setApertureDiameter(Number(e.target.value))}
+            onChange={(e) => setApertureDiameter(clampBetweenMinAndMax(e))}
           />
         </div>
 
@@ -248,7 +258,7 @@ function App() {
             min={apertureDiameter + 1}
             max="400"
             step="1"
-            onChange={(e) => setTelescopeInnerDiameter(Number(e.target.value))}
+            onChange={(e) => setTelescopeInnerDiameter(clampBetweenMinAndMax(e))}
           />
         </div>
 
@@ -263,7 +273,7 @@ function App() {
                 min="0"
                 max="30"
                 step="1"
-                onChange={(e) => setWallHeight(Number(e.target.value))}
+                onChange={(e) => setWallHeight(Number(clampBetweenMinAndMax(e)))}
               />
             </div>
 
@@ -276,7 +286,7 @@ function App() {
                 min="1"
                 max="5"
                 step="1"
-                onChange={(e) => setWallThickness(Number(e.target.value))}
+                onChange={(e) => setWallThickness(Number(clampBetweenMinAndMax(e)))}
               />
             </div>
           </>
