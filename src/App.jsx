@@ -226,7 +226,7 @@ function App() {
             type="number"
             id="focalLength"
             value={focalLength}
-            min="100"
+            min="25"
             max="3000"
             step="1"
             onChange={(e) => setFocalLength(clampBetweenMinAndMax(e))}

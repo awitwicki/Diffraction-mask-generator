@@ -119,9 +119,7 @@ const generate2dBahtinovMaskShape = ({
 
   const bahtinovFactor = 200.0; // 150 - 200
   let slitWidth = focalLength / bahtinovFactor;
-  if (slitWidth < 1) {
-    slitWidth *= 3;
-  }
+  slitWidth = Math.min(1, slitWidth);
 
   const guidingWidth = Math.max(slitWidth, 1);
   const slitSpacing = slitWidth;
