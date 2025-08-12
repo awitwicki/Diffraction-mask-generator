@@ -13,7 +13,7 @@ import {
 } from "./MeshGenerators";
 
 function App() {
-  const [maskThickness, setMaskThickness] = useState(1);
+  const [maskThickness, setMaskThickness] = useState(2);
   const [focalLength, setFocalLength] = useState(400);
   const [apertureDiameter, setApertureDiameter] = useState(51);
   const [telescopeInnerDiameter, setTelescopeInnerDiameter] = useState(80);
@@ -213,9 +213,9 @@ function App() {
             type="number"
             id="maskThickness"
             value={maskThickness}
-            min="1"
+            min="2"
             max="5"
-            step="1"
+            step="0.1"
             onChange={(e) => setMaskThickness(clampBetweenMinAndMax(e))}
           />
         </div>
@@ -257,7 +257,7 @@ function App() {
             value={telescopeInnerDiameter}
             min={apertureDiameter + 1}
             max="400"
-            step="1"
+            step="0.1"
             onChange={(e) => setTelescopeInnerDiameter(clampBetweenMinAndMax(e))}
           />
         </div>
