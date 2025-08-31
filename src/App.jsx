@@ -11,6 +11,7 @@ import {
   generate2dBahtinovMaskMesh,
   generate3dBahtinovMaskMesh,
 } from "./MeshGenerators";
+import ClampNumberInput from './ClampNumberInput';
 
 function App() {
   const [maskThickness, setMaskThickness] = useState(2);
@@ -222,28 +223,12 @@ function App() {
 
         <div className="input-group">
           <label htmlFor="focalLength">Фокусна відстань (мм):</label>
-          <input
-            type="number"
-            id="focalLength"
-            value={focalLength}
-            min="25"
-            max="3000"
-            step="1"
-            onChange={(e) => setFocalLength(clampBetweenMinAndMax(e))}
-          />
+           <ClampNumberInput value={focalLength} min={25} max={3000} step={1} onUpdate={setFocalLength} />
         </div>
 
         <div className="input-group">
           <label htmlFor="apertureDiameter">Апертура (мм):</label>
-          <input
-            type="number"
-            id="apertureDiameter"
-            value={apertureDiameter}
-            min="50"
-            max={telescopeInnerDiameter - 1}
-            step="1"
-            onChange={(e) => setApertureDiameter(clampBetweenMinAndMax(e))}
-          />
+          <ClampNumberInput value={apertureDiameter} min={50} max={telescopeInnerDiameter - 1} step={1} onUpdate={setApertureDiameter} />
         </div>
 
         <div className="input-group">
@@ -251,43 +236,19 @@ function App() {
             {isAdvancedModeChecked ? "Зовнішній діаметр" : "Внутрішній діаметр"} 
             труби (мм):
           </label>
-          <input
-            type="number"
-            id="telescopeInnerDiameter"
-            value={telescopeInnerDiameter}
-            min={apertureDiameter + 1}
-            max="400"
-            step="0.1"
-            onChange={(e) => setTelescopeInnerDiameter(clampBetweenMinAndMax(e))}
-          />
+          <ClampNumberInput value={telescopeInnerDiameter} min={apertureDiameter + 1} max={400} step={0.1} onUpdate={setTelescopeInnerDiameter} />
         </div>
 
         {isAdvancedModeChecked && (
           <>
             <div className="input-group">
               <label htmlFor="wallHeight">Висота обідка (мм):</label>
-              <input
-                type="number"
-                id="wallHeight"
-                value={wallHeight}
-                min="0"
-                max="30"
-                step="1"
-                onChange={(e) => setWallHeight(Number(clampBetweenMinAndMax(e)))}
-              />
+              <ClampNumberInput value={wallHeight} min={0} max={30} step={1} onUpdate={setWallHeight} />
             </div>
 
             <div className="input-group">
               <label htmlFor="telescopeOutDiameter">Товщина обідка (мм):</label>
-              <input
-                type="number"
-                id="telescopeOutDiameter"
-                value={wallThickness}
-                min="1"
-                max="5"
-                step="1"
-                onChange={(e) => setWallThickness(Number(clampBetweenMinAndMax(e)))}
-              />
+              <ClampNumberInput value={wallThickness} min={1} max={5} step={1} onUpdate={setWallThickness} />
             </div>
           </>
         )}
