@@ -227,16 +227,15 @@ function App() {
         </div>
 
         <div className="input-group">
-          <label htmlFor="apertureDiameter">Апертура (мм):</label>
-          <ClampNumberInput value={apertureDiameter} min={50} max={telescopeInnerDiameter - 1} step={1} onUpdate={setApertureDiameter} />
+          <label htmlFor="telescopeInnerDiameter">
+            {`${isAdvancedModeChecked ? "Зовнішній діаметр" : "Внутрішній діаметр"} труби (мм)`}:
+          </label>
+          <ClampNumberInput value={telescopeInnerDiameter} min={apertureDiameter + 1} max={400} step={0.1} onUpdate={setTelescopeInnerDiameter} />
         </div>
 
         <div className="input-group">
-          <label htmlFor="telescopeInnerDiameter">
-            {isAdvancedModeChecked ? "Зовнішній діаметр" : "Внутрішній діаметр"} 
-            труби (мм):
-          </label>
-          <ClampNumberInput value={telescopeInnerDiameter} min={apertureDiameter + 1} max={400} step={0.1} onUpdate={setTelescopeInnerDiameter} />
+          <label htmlFor="apertureDiameter">Апертура (мм):</label>
+          <ClampNumberInput value={apertureDiameter} min={50} max={telescopeInnerDiameter - 1} step={1} onUpdate={setApertureDiameter} />
         </div>
 
         {isAdvancedModeChecked && (
