@@ -108,3 +108,46 @@ button:hover {
   color: #27ae60;
   font-weight: bold;
 }
+
+/* Collapsible UI panel */
+.ui-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.panel-toggle {
+  background: rgba(44, 62, 80, 0.85);
+  color: #fff;
+  border: 1px solid rgba(0,0,0,0.15);
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.panel-toggle:hover {
+  background: #3498db;
+}
+
+.ui-panel-content {
+  margin-top: 10px;
+}
+
+.ui-panel.collapsed {
+  padding: 10px 12px;
+}
+
+.ui-panel.collapsed .ui-panel-content {
+  display: none;
+}
+
+.ui-panel.collapsed .panel-toggle {
+  transform: rotate(180deg);
+}
