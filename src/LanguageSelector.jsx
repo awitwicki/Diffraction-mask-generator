@@ -42,8 +42,7 @@ export default function LanguageSelector() {
               onKeyDown={(e) => handleKeyDown(e, idx)}
               title={t ? t(`lang.${l.code}`) : l.code}
               style={{
-                background: selected ? "#1a73e8" : "transparent",
-                color: selected ? "#fff" : "inherit",
+                background: selected ? "#2693e6" : "transparent",
                 border: "none",
                 padding: "6px 10px",
                 cursor: "pointer",
