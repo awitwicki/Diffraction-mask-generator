@@ -22,8 +22,7 @@ const translations = {
     rimThickness: "Товщина обідка (мм):",
     exportSTL: "Експорт в STL",
     mm: "мм",
-    filePrefix: "циліндр",
-    fileSuffix: "бахтiнов",
+    filePrefix: "бахтiнов",
   },
   pl: {
     appTitle: "Generator maski Bahtinova",
@@ -40,8 +39,7 @@ const translations = {
     rimThickness: "Grubość kołnierza (mm):",
     exportSTL: "Eksport do STL",
     mm: "mm",
-    filePrefix: "walec",
-    fileSuffix: "bahtinow",
+    filePrefix: "bahtinow",
   },
   en: {
     appTitle: "Bahtinov Mask Generator",
@@ -58,8 +56,7 @@ const translations = {
     rimThickness: "Rim thickness (mm):",
     exportSTL: "Export to STL",
     mm: "mm",
-    filePrefix: "cylinder",
-    fileSuffix: "bahtinov",
+    filePrefix: "bahtinov",
   },
 };
 

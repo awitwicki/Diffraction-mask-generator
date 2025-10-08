@@ -187,7 +187,7 @@ function AppContent() {
     const blob = new Blob([stlString], { type: "text/plain" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `${t("filePrefix")}_Ø${apertureDiameter}mm_f${focalLength}mm_${t("fileSuffix")}.stl`;;
+    link.download = `${t("filePrefix")}_Ø${apertureDiameter}mm_f${focalLength}mm.stl`;
 
     document.body.appendChild(link);
     link.click();
