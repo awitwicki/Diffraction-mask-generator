@@ -12,8 +12,12 @@ import {
   generate3dBahtinovMaskMesh,
 } from "./MeshGenerators";
 import ClampNumberInput from './ClampNumberInput';
+import { LanguageProvider, useI18n } from "./i18n";
+import LanguageSelector from "./LanguageSelector";
 
-function App() {
+function AppContent() {
+  const { t } = useI18n();
+
   const [maskThickness, setMaskThickness] = useState(2);
   const [focalLength, setFocalLength] = useState(400);
   const [apertureDiameter, setApertureDiameter] = useState(51);
@@ -126,7 +130,7 @@ function App() {
 
     if (combinedMeshRef.current) {
       sceneRef.current.remove(combinedMeshRef.current);
- 
+
       if (combinedMeshRef.current.geometry) {
         combinedMeshRef.current.geometry.dispose();
       }
@@ -183,7 +187,7 @@ function App() {
     const blob = new Blob([stlString], { type: "text/plain" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `циліндр_Ø${apertureDiameter}мм_f${focalLength}мм_бахтiнов.stl`;
+    link.download = `${t("filePrefix")}_Ø${apertureDiameter}mm_f${focalLength}mm_${t("fileSuffix")}.stl`;;
 
     document.body.appendChild(link);
     link.click();
@@ -195,11 +199,16 @@ function App() {
       <div ref={containerRef} className="three-container" />
 
       <div className="ui-panel">
-        <h2>Генератор маски Бахтінова</h2>
+        <h2>{t("appTitle")}</h2>
+        <LanguageSelector />
 
         <div className="input-group">
-          <label htmlFor="focalLength">Тип моделі ({isAdvancedModeChecked ? "насадка" : "пласка"}):</label>
+          <label htmlFor="focalLength">
+            {t("modelType")} ({isAdvancedModeChecked ? t("attachment") : t("flat")}):
+          </label>
           <Switch
+             height={25}
+             handleDiameter={23}
             onChange={handleChange}
             checked={isAdvancedModeChecked}
             uncheckedIcon={false}
@@ -209,7 +218,7 @@ function App() {
         </div>
 
         <div className="input-group">
-          <label htmlFor="maskThickness">Товщина маски (мм):</label>
+          <label htmlFor="maskThickness">{t("maskThickness")}</label>
             <input
             type="number"
             id="maskThickness"
@@ -222,31 +231,31 @@ function App() {
         </div>
 
         <div className="input-group">
-          <label htmlFor="focalLength">Фокусна відстань (мм):</label>
+          <label htmlFor="focalLength">{t("focalLength")}</label>
            <ClampNumberInput value={focalLength} min={25} max={3000} step={1} onUpdate={setFocalLength} />
         </div>
 
         <div className="input-group">
           <label htmlFor="telescopeInnerDiameter">
-            {`${isAdvancedModeChecked ? "Зовнішній діаметр" : "Внутрішній діаметр"} труби (мм)`}:
+            {`${isAdvancedModeChecked ? t("outerDiameter") : t("innerDiameter")} ${t("tube")} (${t("mm")})`}:
           </label>
           <ClampNumberInput value={telescopeInnerDiameter} min={apertureDiameter + 1} max={400} step={0.1} onUpdate={setTelescopeInnerDiameter} />
         </div>
 
         <div className="input-group">
-          <label htmlFor="apertureDiameter">Апертура (мм):</label>
+          <label htmlFor="apertureDiameter">{t("aperture")}</label>
           <ClampNumberInput value={apertureDiameter} min={50} max={telescopeInnerDiameter - 1} step={1} onUpdate={setApertureDiameter} />
         </div>
 
         {isAdvancedModeChecked && (
           <>
             <div className="input-group">
-              <label htmlFor="wallHeight">Висота обідка (мм):</label>
+              <label htmlFor="wallHeight">{t("rimHeight")}</label>
               <ClampNumberInput value={wallHeight} min={0} max={30} step={1} onUpdate={setWallHeight} />
             </div>
 
             <div className="input-group">
-              <label htmlFor="telescopeOutDiameter">Товщина обідка (мм):</label>
+              <label htmlFor="telescopeOutDiameter">{t("rimThickness")}</label>
               <ClampNumberInput value={wallThickness} min={1} max={5} step={1} onUpdate={setWallThickness} />
             </div>
           </>
@@ -266,12 +275,20 @@ function App() {
       </div> */}
 
         <div className="button-group">
-          <button onClick={exportSTL}>Експорт в STL</button>
+          <button onClick={exportSTL}>{t("exportSTL")}</button>
         </div>
 
         <div className="status">{status}</div>
       </div>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
   );
 }
 
