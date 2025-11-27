@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# Crawl-delay can be uncommented if needed to throttle bots
+# Crawl-delay: 5
+
+Sitemap: https://awitwicki.github.io/Diffraction-mask-generator/sitemap.xml
