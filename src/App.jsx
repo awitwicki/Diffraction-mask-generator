@@ -84,23 +84,35 @@ function AppContent() {
     }, [darkMode]);
 
     useEffect(() => {
-        // window.addEventListener('resize', onWindowResize);
+        const container = containerRef.current;
+        if (!container) return;
 
         let scene = new THREE.Scene();
         scene.background = new THREE.Color(darkMode ? 0x0a0a1a : 0xe8ecf0);
         sceneRef.current = scene;
         var camera = new THREE.PerspectiveCamera(
             60,
-            window.innerWidth / window.innerHeight,
+            container.clientWidth / container.clientHeight,
             0.01,
             10
         );
         camera.position.set(0, 0.125, -0.035);
+        cameraRef.current = camera;
 
         var renderer = new THREE.WebGLRenderer({antialias: true});
-        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setSize(container.clientWidth, container.clientHeight);
         renderer.setPixelRatio(window.devicePixelRatio);
-        containerRef.current && containerRef.current.appendChild(renderer.domElement);
+        rendererRef.current = renderer;
+        container.appendChild(renderer.domElement);
+
+        const resizeObserver = new ResizeObserver(() => {
+            const w = container.clientWidth;
+            const h = container.clientHeight;
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+            renderer.setSize(w, h);
+        });
+        resizeObserver.observe(container);
 
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
@@ -155,12 +167,12 @@ function AppContent() {
         animate();
 
         return () => {
+            resizeObserver.disconnect();
             if (requestIdRef.current) {
                 cancelAnimationFrame(requestIdRef.current);
             }
-            if (rendererRef.current) {
-                rendererRef.current.dispose();
-            }
+            renderer.dispose();
+            container.removeChild(renderer.domElement);
         };
     }, []);
 

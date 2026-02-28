@@ -30,17 +30,12 @@ export function generateBahtinovMaskSVG({ focalLength, apertureDiameter, telesco
   const vbMin = -r - padding;
   const vbSize = (r + padding) * 2;
 
-  const paths = [
-    `  <path d="${outerPath}" fill="none" stroke="black" stroke-width="0.2" />`,
-    ...holePaths.map((d) => `  <path d="${d}" fill="none" stroke="black" stroke-width="0.2" />`),
-  ];
-
   return [
     `<svg xmlns="http://www.w3.org/2000/svg"`,
     `     width="${telescopeInnerDiameter + padding * 2}mm"`,
     `     height="${telescopeInnerDiameter + padding * 2}mm"`,
     `     viewBox="${vbMin} ${vbMin} ${vbSize} ${vbSize}">`,
-    ...paths,
+    `  <path d="${combinedPath}" fill="black" fill-rule="evenodd" />`,
     `</svg>`,
   ].join("\n");
 }
