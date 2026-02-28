@@ -319,4 +319,4 @@ const generate3dBahtinovMaskMesh = ({
   return mesh;
 };
 
-export { generate2dBahtinovMaskMesh, generate3dBahtinovMaskMesh };
+export { generate2dBahtinovMaskShape, generate2dBahtinovMaskMesh, generate3dBahtinovMaskMesh };

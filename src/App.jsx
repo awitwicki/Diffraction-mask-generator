@@ -12,6 +12,7 @@ import {
     generate3dBahtinovMaskMesh,
 } from "./MeshGenerators";
 import ClampNumberInput from './ClampNumberInput';
+import {downloadSVG} from "./SvgExporter";
 import {LanguageProvider, useI18n} from "./i18n";
 import LanguageSelector from "./LanguageSelector";
 
@@ -214,6 +215,15 @@ function AppContent() {
         wallHeight,
     ]);
 
+    const exportSVG = () => {
+        downloadSVG({
+            focalLength,
+            apertureDiameter,
+            telescopeInnerDiameter,
+            filename: `${t("filePrefix")}_Ø${apertureDiameter}mm_f${focalLength}mm.svg`,
+        });
+    };
+
     const exportSTL = () => {
         if (!combinedMeshRef.current) return;
 
@@ -344,6 +354,7 @@ function AppContent() {
 
                     <div className="button-group">
                         <button onClick={exportSTL}>{t("exportSTL")}</button>
+                        <button onClick={exportSVG}>{t("exportSVG")}</button>
                     </div>
 
                     <div className="status">{status}</div>
