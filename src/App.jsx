@@ -33,6 +33,12 @@ function AppContent() {
     const [panelCollapsed, setPanelCollapsed] = useState(false);
     const togglePanel = () => setPanelCollapsed((v) => !v);
 
+    const [darkMode, setDarkMode] = useState(() => {
+        const saved = localStorage.getItem('theme');
+        return saved ? saved === 'dark' : true;
+    });
+    const toggleTheme = () => setDarkMode((v) => !v);
+
     const containerRef = useRef(null);
     const sceneRef = useRef(null);
     const cameraRef = useRef(null);
@@ -50,11 +56,37 @@ function AppContent() {
         return safeValue;
     };
 
+    // Apply theme to DOM and update 3D scene
+    useEffect(() => {
+        const theme = darkMode ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+
+        if (sceneRef.current) {
+            const style = getComputedStyle(document.documentElement);
+            const sceneBg = style.getPropertyValue('--scene-bg').trim();
+            sceneRef.current.background = new THREE.Color(sceneBg);
+
+            const gridColor = style.getPropertyValue('--grid-color').trim();
+            const gridOpacity = parseFloat(style.getPropertyValue('--grid-opacity'));
+            const textColor = style.getPropertyValue('--text-3d-color').trim();
+
+            sceneRef.current.traverse((child) => {
+                if (child.isGridHelper) {
+                    child.material.color.set(gridColor);
+                    child.material.opacity = gridOpacity;
+                } else if (child.isMesh && child.geometry?.type === 'TextGeometry') {
+                    child.material.color.set(textColor);
+                }
+            });
+        }
+    }, [darkMode]);
+
     useEffect(() => {
         // window.addEventListener('resize', onWindowResize);
 
         let scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xf0f0f0);
+        scene.background = new THREE.Color(darkMode ? 0x0a0a1a : 0xe8ecf0);
         sceneRef.current = scene;
         var camera = new THREE.PerspectiveCamera(
             60,
@@ -86,7 +118,10 @@ function AppContent() {
         directionalLight2.position.set(-0.5, 0.5, 0.5);
         sceneRef.current.add(directionalLight2);
 
-        const gridHelper = new THREE.GridHelper(0.2, 20);
+        const gridCol = darkMode ? 0x1a1a3a : 0xb0b8c0;
+        const gridHelper = new THREE.GridHelper(0.2, 20, gridCol, gridCol);
+        gridHelper.material.opacity = darkMode ? 0.4 : 0.5;
+        gridHelper.material.transparent = true;
         sceneRef.current.add(gridHelper);
 
         // Add annotation text
@@ -94,7 +129,7 @@ function AppContent() {
         fontLoader.load(
             "https://threejs.org/examples/fonts/helvetiker_regular.typeface.json",
             (font) => {
-                const textMaterial = new THREE.MeshBasicMaterial({color: 0x1a1a1a});
+                const textMaterial = new THREE.MeshBasicMaterial({color: darkMode ? 0x4a4a6a : 0x8090a0});
                 const textGeometryX = new TextGeometry("20 x 20 cm", {
                     font: font,
                     size: 0.01,
@@ -204,16 +239,27 @@ function AppContent() {
             <div className={`ui-panel ${panelCollapsed ? "collapsed" : ""}`}>
                 <div className="ui-panel-header">
                     <h2>{t("appTitle")}</h2>
-                    <button
-                        className="panel-toggle"
-                        type="button"
-                        onClick={togglePanel}
-                        aria-label="Toggle panel"
-                        aria-expanded={!panelCollapsed}
-                        title={!panelCollapsed ? "Minimize" : "Expand"}
-                    >
-                        v
-                    </button>
+                    <div className="header-buttons">
+                        <button
+                            className="theme-toggle"
+                            type="button"
+                            onClick={toggleTheme}
+                            aria-label="Toggle theme"
+                            title={darkMode ? "Light mode" : "Dark mode"}
+                        >
+                            {darkMode ? "\u2600" : "\u263E"}
+                        </button>
+                        <button
+                            className="panel-toggle"
+                            type="button"
+                            onClick={togglePanel}
+                            aria-label="Toggle panel"
+                            aria-expanded={!panelCollapsed}
+                            title={panelCollapsed ? "Expand" : "Minimize"}
+                        >
+                            v
+                        </button>
+                    </div>
                 </div>
 
                 <div className="ui-panel-content">
@@ -230,7 +276,8 @@ function AppContent() {
                             checked={isAdvancedModeChecked}
                             uncheckedIcon={false}
                             checkedIcon={false}
-                            onColor="#2693e6"
+                            onColor="#00b4d8"
+                            offColor={darkMode ? "#3a3a5c" : "#b0b8c0"}
                         />
                     </div>
 

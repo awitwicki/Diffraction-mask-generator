@@ -17,16 +17,17 @@ export default function LanguageSelector() {
   };
 
   return (
-    <fieldset style={{ border: "none", padding: 0, margin: "8px 0" }} aria-label={t("language")}>
+    <fieldset style={{ border: "none", padding: 0, margin: "0 0 4px 0" }} aria-label={t("language")}>
       <div
         role="radiogroup"
         aria-label={t("language")}
         style={{
           display: "inline-flex",
-          borderRadius: 8,
+          borderRadius: 10,
           overflow: "hidden",
-          border: "1px solid rgba(0,0,0,0.2)",
-          width: "100%"
+          border: "1px solid var(--lang-border)",
+          width: "100%",
+          background: "var(--lang-bg)",
         }}
       >
         {availableLanguages.map((l, idx) => {
@@ -42,18 +43,19 @@ export default function LanguageSelector() {
               onKeyDown={(e) => handleKeyDown(e, idx)}
               title={t ? t(`lang.${l.code}`) : l.code}
               style={{
-                background: selected ? "#2693e6" : "transparent",
+                background: selected
+                  ? "linear-gradient(135deg, var(--gradient-start), var(--gradient-end))"
+                  : "transparent",
                 border: "none",
-                padding: "6px 10px",
+                padding: "7px 10px",
                 cursor: "pointer",
                 lineHeight: 1.2,
-                borderLeft: idx === 0 ? "none" : "1px solid rgba(0,0,0,0.2)",
+                borderLeft: idx === 0 ? "none" : "1px solid var(--lang-divider)",
                 width: "33.33%",
-                  borderRadius: idx === 0
-                      ? "8px 0 0 8px"
-                      : idx === 2
-                          ? "0 8px 8px 0"
-                          : "0",
+                borderRadius: 0,
+                color: selected ? "#fff" : "var(--lang-unselected)",
+                transition: "all 0.2s ease",
+                fontWeight: selected ? 600 : 400,
               }}
             >
               <span aria-hidden="true" style={{ fontSize: "1.1rem" }}>{l.flag}</span>

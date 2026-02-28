@@ -1,46 +1,3 @@
-#root {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-}
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
-}
-
-
 .App {
   position: relative;
   width: 100vw;
@@ -53,64 +10,27 @@
   height: 100%;
 }
 
+/* ── Glassmorphism Panel ── */
 .ui-panel {
   position: absolute;
-  top: 20px;
-  left: 20px;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 15px;
-  border-radius: 10px;
+  top: 16px;
+  left: 16px;
+  background: var(--panel-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  padding: 18px 20px;
+  border-radius: 16px;
+  border: 1px solid var(--panel-border);
   z-index: 100;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-  max-width: 400px;
+  box-shadow:
+    0 4px 30px var(--shadow-panel),
+    0 0 60px var(--accent-glow);
+  max-width: 370px;
+  min-width: 310px;
+  transition: padding 0.3s ease, box-shadow 0.3s ease;
 }
 
-.input-group {
-  margin: 10px 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.input-group label {
-  display: inline-block;
-  width: 180px;
-  margin-right: 10px;
-}
-
-.input-group input {
-  width: 100px;
-  padding: 5px;
-}
-
-.button-group {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 15px;
-}
-
-button {
-  background: #2c3e50;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  cursor: pointer;
-  border-radius: 5px;
-  font-weight: bold;
-}
-
-button:hover {
-  background: #2693e6;
-}
-
-.status {
-  margin-top: 10px;
-  color: #27ae60;
-  font-weight: bold;
-}
-
-/* Collapsible UI panel */
+/* ── Panel Header ── */
 .ui-panel-header {
   display: flex;
   align-items: center;
@@ -118,31 +38,50 @@ button:hover {
   gap: 8px;
 }
 
+.header-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.theme-toggle,
 .panel-toggle {
-  background: rgba(44, 62, 80, 0.85);
-  color: #fff;
-  border: 1px solid rgba(0,0,0,0.15);
-  width: 28px;
-  height: 28px;
+  background: var(--input-bg);
+  color: var(--text-secondary);
+  border: 1px solid var(--panel-border);
+  width: 30px;
+  height: 30px;
   padding: 0;
-  border-radius: 6px;
-  font-size: 14px;
+  border-radius: 8px;
+  font-size: 15px;
   line-height: 1;
   display: grid;
   place-items: center;
   cursor: pointer;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
 }
 
+.theme-toggle:hover,
 .panel-toggle:hover {
-  background: #3498db;
+  background: var(--input-hover-bg);
+  color: var(--accent);
+  border-color: var(--accent-dim);
 }
 
+/* ── Panel Content ── */
 .ui-panel-content {
-  margin-top: 10px;
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
+/* ── Collapse State ── */
 .ui-panel.collapsed {
-  padding: 10px 12px;
+  padding: 12px 14px;
+  box-shadow: 0 4px 20px var(--shadow-collapsed);
 }
 
 .ui-panel.collapsed .ui-panel-content {
@@ -151,4 +90,96 @@ button:hover {
 
 .ui-panel.collapsed .panel-toggle {
   transform: rotate(180deg);
+}
+
+/* ── Input Groups ── */
+.input-group {
+  margin: 0;
+  padding: 8px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--divider);
+}
+
+.input-group:last-child {
+  border-bottom: none;
+}
+
+.input-group label {
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-right: 12px;
+  flex-shrink: 1;
+}
+
+.input-group input {
+  width: 90px;
+  padding: 7px 10px;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-align: right;
+  outline: none;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.input-group input:hover {
+  border-color: var(--input-hover-border);
+  background: var(--input-hover-bg);
+}
+
+.input-group input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+  background: var(--input-hover-bg);
+}
+
+/* ── Buttons ── */
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--divider-strong);
+}
+
+.button-group button {
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+  color: #fff;
+  border: none;
+  padding: 11px 18px;
+  cursor: pointer;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 12px rgba(0, 180, 216, 0.2);
+}
+
+.button-group button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(0, 180, 216, 0.35);
+  filter: brightness(1.1);
+}
+
+.button-group button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 180, 216, 0.2);
+}
+
+/* ── Status ── */
+.status {
+  margin-top: 8px;
+  color: var(--accent);
+  font-weight: 500;
+  font-size: 0.82rem;
 }
