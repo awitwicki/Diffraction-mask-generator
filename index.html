@@ -4,11 +4,116 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Diffraction Mask Generator</title>
-    <meta name="description" content="Online Bahtinov mask generator for telescopes. Create and preview diffraction focusing masks and download ready-to-print 3D STL files for your optics setup." />
+    <title>Bahtinov Mask Generator — Free Online Tool | 3D Preview, STL & SVG Export</title>
+    <meta name="description" content="Free online Bahtinov mask generator with 3D preview. Enter your telescope specs, preview the mask, and download STL or SVG files for 3D printing or laser cutting." />
     <meta name="keywords" content="Bahtinov mask generator, diffraction mask generator, telescope focusing mask, 3D STL download, astrophotography tools, STL Bahtinov, focus mask" />
     <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Bahtinov Mask Generator — Free Online Tool | 3D Preview, STL & SVG Export" />
+    <meta property="og:description" content="Free online Bahtinov mask generator with 3D preview. Enter your telescope specs, preview the mask, and download STL or SVG files for 3D printing or laser cutting." />
+    <meta property="og:image" content="https://awitwicki.github.io/Diffraction-mask-generator/og-preview.png" />
+    <meta property="og:url" content="https://awitwicki.github.io/Diffraction-mask-generator/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Bahtinov Mask Generator" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Bahtinov Mask Generator — Free Online Tool | 3D Preview, STL & SVG Export" />
+    <meta name="twitter:description" content="Free online Bahtinov mask generator with 3D preview. Enter your telescope specs, preview the mask, and download STL or SVG files for 3D printing or laser cutting." />
+    <meta name="twitter:image" content="https://awitwicki.github.io/Diffraction-mask-generator/og-preview.png" />
+
     <link rel="canonical" href="https://awitwicki.github.io/Diffraction-mask-generator/" />
+
+    <!-- Hreflang -->
+    <link rel="alternate" hreflang="en" href="https://awitwicki.github.io/Diffraction-mask-generator/" />
+    <link rel="alternate" hreflang="pl" href="https://awitwicki.github.io/Diffraction-mask-generator/" />
+    <link rel="alternate" hreflang="uk" href="https://awitwicki.github.io/Diffraction-mask-generator/" />
+    <link rel="alternate" hreflang="x-default" href="https://awitwicki.github.io/Diffraction-mask-generator/" />
+
+    <!-- Preconnect -->
+    <link rel="preconnect" href="https://www.googletagmanager.com" />
+    <link rel="preconnect" href="https://threejs.org" crossorigin />
+
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Bahtinov Mask Generator",
+  "description": "Free online Bahtinov mask generator with 3D preview. Generate and export telescope focusing masks as STL or SVG files.",
+  "url": "https://awitwicki.github.io/Diffraction-mask-generator/",
+  "applicationCategory": "UtilityApplication",
+  "operatingSystem": "Web Browser",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "featureList": [
+    "3D mask preview",
+    "STL export for 3D printing",
+    "SVG export for laser cutting",
+    "Telescope tube attachment mode",
+    "Customizable focal length and aperture"
+  ]
+}
+</script>
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What focal length should I use for a Bahtinov mask?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Use your telescope's focal length, which is usually printed on the optical tube or listed in the specs. Common values range from 400mm for small refractors to 2000mm+ for SCTs. The generator calculates the optimal slit width from this value."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the difference between flat and attachment mode?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Flat mode generates a simple disc-shaped mask you can hold or tape over your telescope. Attachment mode adds a cylindrical rim that friction-fits onto your telescope tube, making it easier to mount securely during focusing sessions."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I 3D print a Bahtinov mask?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Export the mask as an STL file and print it on any FDM 3D printer. Use a dark filament (black PLA works well) to minimize light scatter. A layer height of 0.2mm and 100% infill is recommended for structural rigidity."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I laser cut a Bahtinov mask?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Export the mask as an SVG file and use it with a laser cutter. Thin cardboard, acrylic, or plywood all work well. The SVG includes the correct slit dimensions at 1:1 scale."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What telescope tube diameter should I enter?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "In flat mode, enter the inner diameter of your telescope tube — the opening the mask will cover. In attachment mode, enter the outer diameter so the rim fits snugly around the outside. Measure with calipers for the best fit."
+      }
+    }
+  ]
+}
+</script>
+
+    <script>
+      (function(){
+        var nav = (navigator.language || '').toLowerCase();
+        if (nav.startsWith('uk')) document.documentElement.lang = 'uk';
+        else if (nav.startsWith('pl')) document.documentElement.lang = 'pl';
+      })();
+    </script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-9FL4QCWJV3"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -19,6 +124,10 @@
     </script>
   </head>
   <body>
+    <noscript>
+      <h1>Bahtinov Mask Generator</h1>
+      <p>Free online tool for generating Bahtinov focusing masks for telescopes. Supports STL and SVG export. Enable JavaScript to use the interactive generator.</p>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

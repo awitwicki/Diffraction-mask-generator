@@ -15,6 +15,7 @@ import ClampNumberInput from './ClampNumberInput';
 import {downloadSVG} from "./SvgExporter";
 import {LanguageProvider, useI18n} from "./i18n";
 import LanguageSelector from "./LanguageSelector";
+import SeoContent from "./SeoContent";
 
 function AppContent() {
     const {t} = useI18n();
@@ -131,9 +132,9 @@ function AppContent() {
         directionalLight2.position.set(-0.5, 0.5, 0.5);
         sceneRef.current.add(directionalLight2);
 
-        const gridCol = darkMode ? 0x1a1a3a : 0xb0b8c0;
+        const gridCol = darkMode ? 0x2a2a5a : 0xb0b8c0;
         const gridHelper = new THREE.GridHelper(0.2, 20, gridCol, gridCol);
-        gridHelper.material.opacity = darkMode ? 0.4 : 0.5;
+        gridHelper.material.opacity = darkMode ? 0.6 : 0.5;
         gridHelper.material.transparent = true;
         sceneRef.current.add(gridHelper);
 
@@ -256,122 +257,127 @@ function AppContent() {
 
     return (
         <div className="App">
-            <div ref={containerRef} className="three-container"/>
+            <header className="sr-only">
+                <h1>{t("appTitle")}</h1>
+            </header>
 
-            <div className={`ui-panel ${panelCollapsed ? "collapsed" : ""}`}>
-                <div className="ui-panel-header">
-                    <h2>{t("appTitle")}</h2>
-                    <div className="header-buttons">
-                        <button
-                            className="theme-toggle"
-                            type="button"
-                            onClick={toggleTheme}
-                            aria-label="Toggle theme"
-                            title={darkMode ? "Light mode" : "Dark mode"}
-                        >
-                            {darkMode ? "\u2600" : "\u263E"}
-                        </button>
-                        <button
-                            className="panel-toggle"
-                            type="button"
-                            onClick={togglePanel}
-                            aria-label="Toggle panel"
-                            aria-expanded={!panelCollapsed}
-                            title={panelCollapsed ? "Expand" : "Minimize"}
-                        >
-                            v
-                        </button>
-                    </div>
-                </div>
+            <main>
+                <section className="tool-section">
+                    <div ref={containerRef} className="three-container"/>
 
-                <div className="ui-panel-content">
-                    <LanguageSelector/>
+                    <div className={`ui-panel ${panelCollapsed ? "collapsed" : ""}`}>
+                        <div className="ui-panel-header">
+                            <h2>{t("appTitle")}</h2>
+                            <div className="header-buttons">
+                                <button
+                                    className="theme-toggle"
+                                    type="button"
+                                    onClick={toggleTheme}
+                                    aria-label="Toggle theme"
+                                    title={darkMode ? "Light mode" : "Dark mode"}
+                                >
+                                    {darkMode ? "\u2600" : "\u263E"}
+                                </button>
+                                <button
+                                    className="panel-toggle"
+                                    type="button"
+                                    onClick={togglePanel}
+                                    aria-label="Toggle panel"
+                                    aria-expanded={!panelCollapsed}
+                                    title={panelCollapsed ? "Expand" : "Minimize"}
+                                >
+                                    v
+                                </button>
+                            </div>
+                        </div>
 
-                    <div className="input-group">
-                        <label htmlFor="focalLength">
-                            {t("modelType")} ({isAdvancedModeChecked ? t("attachment") : t("flat")}):
-                        </label>
-                        <Switch
-                            height={25}
-                            handleDiameter={23}
-                            onChange={handleChange}
-                            checked={isAdvancedModeChecked}
-                            uncheckedIcon={false}
-                            checkedIcon={false}
-                            onColor="#00b4d8"
-                            offColor={darkMode ? "#3a3a5c" : "#b0b8c0"}
-                        />
-                    </div>
-
-                    <div className="input-group">
-                        <label htmlFor="maskThickness">{t("maskThickness")}</label>
-                        <input
-                            type="number"
-                            id="maskThickness"
-                            value={maskThickness}
-                            min="2"
-                            max="5"
-                            step="0.1"
-                            onChange={(e) => setMaskThickness(clampBetweenMinAndMax(e))}
-                        />
-                    </div>
-
-                    <div className="input-group">
-                        <label htmlFor="focalLength">{t("focalLength")}</label>
-                        <ClampNumberInput value={focalLength} min={25} max={3000} step={1} onUpdate={setFocalLength}/>
-                    </div>
-
-                    <div className="input-group">
-                        <label htmlFor="telescopeInnerDiameter">
-                            {`${isAdvancedModeChecked ? t("outerDiameter") : t("innerDiameter")} ${t("tube")} (${t("mm")})`}:
-                        </label>
-                        <ClampNumberInput value={telescopeInnerDiameter} min={apertureDiameter + 1} max={400} step={0.1}
-                                          onUpdate={setTelescopeInnerDiameter}/>
-                    </div>
-
-                    <div className="input-group">
-                        <label htmlFor="apertureDiameter">{t("aperture")}</label>
-                        <ClampNumberInput value={apertureDiameter} min={50} max={telescopeInnerDiameter - 1} step={1}
-                                          onUpdate={setApertureDiameter}/>
-                    </div>
-
-                    {isAdvancedModeChecked && (
-                        <>
+                        <div className="ui-panel-content">
+                            <LanguageSelector/>
                             <div className="input-group">
-                                <label htmlFor="wallHeight">{t("rimHeight")}</label>
-                                <ClampNumberInput value={wallHeight} min={0} max={30} step={1}
-                                                  onUpdate={setWallHeight}/>
+                                <label htmlFor="focalLength">
+                                    {t("modelType")} ({isAdvancedModeChecked ? t("attachment") : t("flat")}):
+                                </label>
+                                <Switch
+                                    height={25}
+                                    handleDiameter={23}
+                                    onChange={handleChange}
+                                    checked={isAdvancedModeChecked}
+                                    uncheckedIcon={false}
+                                    checkedIcon={false}
+                                    onColor="#00b4d8"
+                                    offColor={darkMode ? "#3a3a5c" : "#b0b8c0"}
+                                />
                             </div>
 
                             <div className="input-group">
-                                <label htmlFor="telescopeOutDiameter">{t("rimThickness")}</label>
-                                <ClampNumberInput value={wallThickness} min={1} max={5} step={1}
-                                                  onUpdate={setWallThickness}/>
+                                <label htmlFor="maskThickness">{t("maskThickness")}</label>
+                                <input
+                                    type="number"
+                                    id="maskThickness"
+                                    value={maskThickness}
+                                    min="2"
+                                    max="5"
+                                    step="0.1"
+                                    onChange={(e) => setMaskThickness(clampBetweenMinAndMax(e))}
+                                />
                             </div>
-                        </>
-                    )}
 
-                    {/* <div className="input-group">
-          <label htmlFor="segments">Сегменти:</label>
-          <input 
-            type="number" 
-            id="segments" 
-            value={segments} 
-            min="8" 
-            max="128" 
-            step="1"
-            onChange={(e) => setSegments(Number(e.target.value))}
-          />
-        </div> */}
+                            <div className="input-group">
+                                <label htmlFor="focalLength">{t("focalLength")}</label>
+                                <ClampNumberInput value={focalLength} min={25} max={3000} step={1} onUpdate={setFocalLength}/>
+                            </div>
 
-                    <div className="button-group">
-                        <button onClick={exportSTL}>{t("exportSTL")}</button>
-                        <button onClick={exportSVG}>{t("exportSVG")}</button>
+                            <div className="input-group">
+                                <label htmlFor="telescopeInnerDiameter">
+                                    {`${isAdvancedModeChecked ? t("outerDiameter") : t("innerDiameter")} ${t("tube")} (${t("mm")})`}:
+                                </label>
+                                <ClampNumberInput value={telescopeInnerDiameter} min={apertureDiameter + 1} max={400} step={0.1}
+                                                  onUpdate={setTelescopeInnerDiameter}/>
+                            </div>
+
+                            <div className="input-group">
+                                <label htmlFor="apertureDiameter">{t("aperture")}</label>
+                                <ClampNumberInput value={apertureDiameter} min={50} max={telescopeInnerDiameter - 1} step={1}
+                                                  onUpdate={setApertureDiameter}/>
+                            </div>
+
+                            {isAdvancedModeChecked && (
+                                <>
+                                    <div className="input-group">
+                                        <label htmlFor="wallHeight">{t("rimHeight")}</label>
+                                        <ClampNumberInput value={wallHeight} min={0} max={30} step={1}
+                                                          onUpdate={setWallHeight}/>
+                                    </div>
+
+                                    <div className="input-group">
+                                        <label htmlFor="telescopeOutDiameter">{t("rimThickness")}</label>
+                                        <ClampNumberInput value={wallThickness} min={1} max={5} step={1}
+                                                          onUpdate={setWallThickness}/>
+                                    </div>
+                                </>
+                            )}
+
+                            <div className="button-group">
+                                <button onClick={exportSTL}>{t("exportSTL")}</button>
+                                <button onClick={exportSVG}>{t("exportSVG")}</button>
+                            </div>
+
+                            <div className="status">{status}</div>
+                        </div>
                     </div>
+                </section>
 
-                    <div className="status">{status}</div>
-                </div>
-            </div>
+                <SeoContent/>
+            </main>
+
+            <footer className="app-footer">
+                <p>
+                    &copy; {new Date().getFullYear()} Bahtinov Mask Generator &mdash;{" "}
+                    <a href="https://github.com/awitwicki/Diffraction-mask-generator" target="_blank" rel="noopener noreferrer">
+                        GitHub
+                    </a>
+                </p>
+            </footer>
         </div>
     );
 }
